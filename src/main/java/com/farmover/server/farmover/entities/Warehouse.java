@@ -26,6 +26,12 @@ public class Warehouse {
 
     private String address;
 
+    private String warehouseImage;
+
+    private String warehouseBackground;
+
+    private List<String> facilities;
+
     @ManyToOne
     private User owner;
 

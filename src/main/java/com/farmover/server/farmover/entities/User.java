@@ -31,16 +31,25 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     private String uname;
+
     private String email;
+
     private String password;
+
     @Enumerated(EnumType.STRING)
     Role role;
+
     private String phone;
+    
     private String address;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Warehouse> managedWarehouses;
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Services> services;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
