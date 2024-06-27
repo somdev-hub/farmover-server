@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.repositories;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +11,7 @@ import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
 
 public interface ProductionRepo extends JpaRepository<Production, Integer> {
-        Optional<Production> findByFarmer(User farmer);
+        Optional<List<Production>> findByFarmer(User farmer);
 
         Optional<Production> findByToken(Integer token);
 

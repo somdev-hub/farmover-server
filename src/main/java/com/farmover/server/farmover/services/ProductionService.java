@@ -18,7 +18,7 @@ public interface ProductionService {
 
     ProductionDto getProductionByWarehouse(Integer warehouseId);
 
-    ProductionDto getProductionByFarmer(Integer farmerId);
+    List<ProductionDto> getProductionByFarmer(String email);
 
     ProductionDto getProductionByCrop(Integer cropId);
 

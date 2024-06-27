@@ -55,7 +55,7 @@ public class AuthServiceImpl {
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
         User byUsername = userRepo.findByEmail(user.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("user", "username " + user.getUsername(), 0));
+                .orElseThrow(() -> new ResourceNotFoundException("user", "username", user.getUsername()));
 
         String token = jwtService.generateToken(byUsername);
 

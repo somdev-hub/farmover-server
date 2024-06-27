@@ -33,7 +33,7 @@ public class ProductionServiceImpl implements ProductionService {
         Production production = modelMapper.map(productionDto, Production.class);
 
         User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email " + email, 0));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email ", email));
 
         production.setFarmer(user);
         production.setDate(
@@ -47,7 +47,7 @@ public class ProductionServiceImpl implements ProductionService {
     @Override
     public ProductionDto getProduction(Integer token) {
         Production production = productionRepo.findByToken(token)
-                .orElseThrow(() -> new ResourceNotFoundException("Production", "token", token));
+                .orElseThrow(() -> new ResourceNotFoundException("Production", "token", Integer.toString(token)));
 
         return modelMapper.map(production, ProductionDto.class);
     }
@@ -77,9 +77,19 @@ public class ProductionServiceImpl implements ProductionService {
     }
 
     @Override
-    public ProductionDto getProductionByFarmer(Integer farmerId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getProductionByFarmer'");
+    public List<ProductionDto> getProductionByFarmer(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        List<Production> productions = productionRepo.findByFarmer(user).orElseThrow(
+                () -> new ResourceNotFoundException("Production", "farmer email", email));
+
+        List<ProductionDto> productionDtos = productions.stream()
+                .map(production -> modelMapper.map(production, ProductionDto.class))
+                .toList();
+
+        return productionDtos;
+
     }
 
     @Override

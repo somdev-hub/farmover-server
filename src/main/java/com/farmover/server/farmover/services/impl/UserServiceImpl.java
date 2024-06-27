@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUser(Integer id) {
         User user = userRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "user id", id);
+            throw new ResourceNotFoundException("User", "user id", Integer.toString(id));
         });
 
         return modelMapper.map(user, UserDto.class);
@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UserDto userDto, Integer id) {
         User user = userRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "user id", id);
+            throw new ResourceNotFoundException("User", "user id", Integer.toString(id));
         });
 
         user.setUname(userDto.getUname());
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Integer id) {
         User user = userRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "user id", id);
+            throw new ResourceNotFoundException("User", "user id", Integer.toString(id));
         });
 
         userRepo.delete(user);
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserByEmail(String email) {
         User user = userRepo.findByEmail(email).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "email" + email, 0);
+            throw new ResourceNotFoundException("User", "email", email);
         });
 
         return modelMapper.map(user, UserDto.class);
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(Integer id) {
         User user = userRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "user id", id);
+            throw new ResourceNotFoundException("User", "user id", Integer.toString(id));
         });
 
         return modelMapper.map(user, UserDto.class);
