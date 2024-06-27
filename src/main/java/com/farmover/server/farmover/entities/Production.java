@@ -26,7 +26,7 @@ public class Production {
     @Enumerated(EnumType.STRING)
     private Crops crop;
 
-    private String quantity;
+    private Long quantity;
 
     private Date date;
 

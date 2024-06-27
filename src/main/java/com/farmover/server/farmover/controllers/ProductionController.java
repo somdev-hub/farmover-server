@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
 import com.farmover.server.farmover.services.impl.ProductionServiceImpl;
 
@@ -46,5 +47,13 @@ public class ProductionController {
         List<ProductionDto> productions = productionService.getProductionByFarmer(email);
 
         return new ResponseEntity<List<ProductionDto>>(productions, HttpStatus.OK);
+    }
+
+    @GetMapping("/crops")
+    public ResponseEntity<List<CropWiseProduction>> getProductionCropWise(@RequestParam String email) {
+
+        List<CropWiseProduction> cropWiseProductions = productionService.getCropWiseProduction(email);
+
+        return new ResponseEntity<List<CropWiseProduction>>(cropWiseProductions, HttpStatus.OK);
     }
 }

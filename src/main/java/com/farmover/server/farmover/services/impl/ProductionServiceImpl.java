@@ -2,15 +2,19 @@ package com.farmover.server.farmover.services.impl;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.farmover.server.farmover.entities.Crops;
 import com.farmover.server.farmover.entities.Production;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
+import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
@@ -102,6 +106,28 @@ public class ProductionServiceImpl implements ProductionService {
     public List<ProductionDto> getAllProductions() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getAllProductions'");
+    }
+
+    @Override
+    public List<CropWiseProduction> getCropWiseProduction(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        List<Production> productions = productionRepo.findByFarmer(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Production", "farmer email", email));
+
+        Map<Crops, Long> cropProductionMap = new HashMap<>();
+
+        for (Production production : productions) {
+            cropProductionMap.put(production.getCrop(),
+                    cropProductionMap.getOrDefault(production.getCrop(), 0L) + production.getQuantity());
+        }
+
+        List<CropWiseProduction> cropWiseProductions = cropProductionMap.entrySet().stream()
+                .map(entry -> new CropWiseProduction(entry.getKey(), entry.getValue()))
+                .toList();
+
+        return cropWiseProductions;
     }
 
 }

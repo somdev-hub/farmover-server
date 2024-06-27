@@ -2,6 +2,7 @@ package com.farmover.server.farmover.services;
 
 import java.util.List;
 
+import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
 
 public interface ProductionService {
@@ -21,6 +22,8 @@ public interface ProductionService {
     List<ProductionDto> getProductionByFarmer(String email);
 
     ProductionDto getProductionByCrop(Integer cropId);
+
+    List<CropWiseProduction> getCropWiseProduction(String email);
 
     List<ProductionDto> getAllProductions();
 

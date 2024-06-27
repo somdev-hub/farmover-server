@@ -16,7 +16,7 @@ public class ProductionDto {
 
     private Crops crop;
 
-    private String quantity;
+    private Long quantity;
 
     private Date date;
 
