@@ -9,7 +9,7 @@ public interface ProductionService {
 
     ProductionDto addProduction(ProductionDto productionDto, String email);
 
-    ProductionDto getProduction(Integer token);
+    ProductionDto getProduction(Integer token, String email);
 
     ProductionDto updateProduction(ProductionDto productionDto, Integer token);
 

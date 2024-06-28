@@ -2,7 +2,6 @@ package com.farmover.server.farmover.payloads;
 
 import com.farmover.server.farmover.entities.Crops;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -49,9 +49,27 @@ public class ProductionServiceImpl implements ProductionService {
     }
 
     @Override
-    public ProductionDto getProduction(Integer token) {
+    public ProductionDto getProduction(Integer token, String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
         Production production = productionRepo.findByToken(token)
-                .orElseThrow(() -> new ResourceNotFoundException("Production", "token", Integer.toString(token)));
+                .orElseThrow(() -> new ResourceNotFoundException("Production", "token",
+                        Integer.toString(token)));
+
+        if (!production.getFarmer().equals(user)) {
+            throw new ResourceNotFoundException("Production", "token", Integer.toString(token));
+        }
+
+        // List<Production> productions = productionRepo.findByFarmer(user)
+        // .orElseThrow(() -> new ResourceNotFoundException("Production", "farmer
+        // email", email));
+
+        // Production production = productions.stream()
+        // .filter(p -> p.getToken().equals(token))
+        // .findFirst()
+        // .orElseThrow(() -> new ResourceNotFoundException("Production", "token",
+        // Integer.toString(token)));
 
         return modelMapper.map(production, ProductionDto.class);
     }

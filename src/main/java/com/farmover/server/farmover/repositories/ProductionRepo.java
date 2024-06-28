@@ -20,4 +20,6 @@ public interface ProductionRepo extends JpaRepository<Production, Integer> {
         Optional<Production> findByWarehouse(Warehouse warehouse);
 
         Optional<Production> findByCrop(Crops crop);
+
+        Optional<Production> findByTokenAndFarmer(Integer token, User user);
 }

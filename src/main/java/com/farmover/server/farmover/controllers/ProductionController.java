@@ -35,8 +35,8 @@ public class ProductionController {
     }
 
     @GetMapping("/{token}")
-    public ResponseEntity<ProductionDto> getProduction(@PathVariable Integer token) {
-        ProductionDto production = productionService.getProduction(token);
+    public ResponseEntity<ProductionDto> getProduction(@PathVariable Integer token, @RequestParam String email) {
+        ProductionDto production = productionService.getProduction(token,email);
 
         return new ResponseEntity<ProductionDto>(production, HttpStatus.OK);
     }
