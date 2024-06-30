@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.services.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +42,12 @@ public class WareHouseServiceImpl implements WareHouseService{
             throw new ResourceNotFoundException("WareHouse", "wareHouse id", id);
         });
         warehouse.setAddress(wh.getAddress());
-        warehouse.setName(warehouse.getName());
+        warehouse.setName(wh.getName());
         wareHouseRepo.save(warehouse);
     }
 
     @Override
-    public List<Warehouse> getWarehouseByOwner(User user) {
+    public ArrayList<Warehouse> getWarehouseByOwner(User user) {
         return wareHouseRepo.findByOwner(user);
     }
     
