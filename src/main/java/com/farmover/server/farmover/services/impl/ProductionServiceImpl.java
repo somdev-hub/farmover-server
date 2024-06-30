@@ -1,7 +1,7 @@
 package com.farmover.server.farmover.services.impl;
 
-import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,12 +10,15 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.farmover.server.farmover.entities.CropActivity;
 import com.farmover.server.farmover.entities.Crops;
 import com.farmover.server.farmover.entities.Production;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
+import com.farmover.server.farmover.payloads.CropActivityDto;
 import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
+import com.farmover.server.farmover.repositories.CropActivityRepo;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.services.ProductionService;
@@ -32,6 +35,9 @@ public class ProductionServiceImpl implements ProductionService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private CropActivityRepo cropActivityRepo;
+
     @Override
     public ProductionDto addProduction(ProductionDto productionDto, String email) {
         Production production = modelMapper.map(productionDto, Production.class);
@@ -41,9 +47,21 @@ public class ProductionServiceImpl implements ProductionService {
 
         production.setFarmer(user);
         production.setDate(
-                Date.valueOf(LocalDate.now()));
+                LocalDate.now());
+
+        production.setCropActivities(new ArrayList<>());
 
         productionRepo.save(production);
+
+        CropActivity cropActivity = new CropActivity();
+
+        cropActivity.setActivityTitle(productionDto.getStatus());
+        cropActivity.setStartDate(LocalDate.now());
+        cropActivity.setProduction(production);
+
+        production.getCropActivities().add(cropActivity);
+
+        cropActivityRepo.save(cropActivity);
 
         return modelMapper.map(production, ProductionDto.class);
     }
@@ -60,16 +78,6 @@ public class ProductionServiceImpl implements ProductionService {
         if (!production.getFarmer().equals(user)) {
             throw new ResourceNotFoundException("Production", "token", Integer.toString(token));
         }
-
-        // List<Production> productions = productionRepo.findByFarmer(user)
-        // .orElseThrow(() -> new ResourceNotFoundException("Production", "farmer
-        // email", email));
-
-        // Production production = productions.stream()
-        // .filter(p -> p.getToken().equals(token))
-        // .findFirst()
-        // .orElseThrow(() -> new ResourceNotFoundException("Production", "token",
-        // Integer.toString(token)));
 
         return modelMapper.map(production, ProductionDto.class);
     }

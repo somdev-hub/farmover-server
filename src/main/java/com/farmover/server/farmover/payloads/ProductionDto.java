@@ -1,8 +1,9 @@
 package com.farmover.server.farmover.payloads;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
+import com.farmover.server.farmover.entities.CropActivity;
 import com.farmover.server.farmover.entities.Crops;
 import com.farmover.server.farmover.entities.Services;
 import com.farmover.server.farmover.entities.Warehouse;
@@ -18,9 +19,11 @@ public class ProductionDto {
 
     private Long quantity;
 
-    private Date date;
+    private LocalDate date;
 
-    private UserDto farmer;
+    private List<CropActivityDto> cropActivities;
+
+    // private UserDto farmer;
 
     private List<Services> services;
 
