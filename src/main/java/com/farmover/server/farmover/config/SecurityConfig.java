@@ -1,6 +1,5 @@
 package com.farmover.server.farmover.config;
 
-import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         req -> req
                                 .requestMatchers("/warehouse/**").hasAnyRole( "WAREHOUSE_MANAGER","ADMIN")
+                                .requestMatchers("/storage/**").hasAnyRole( "WAREHOUSE_MANAGER","ADMIN")
                                 .requestMatchers("/users/").hasRole("ADMIN")
                                 .requestMatchers("/login/**", "/register/**")
                                 .permitAll()

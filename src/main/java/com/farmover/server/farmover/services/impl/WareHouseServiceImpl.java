@@ -1,7 +1,6 @@
 package com.farmover.server.farmover.services.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,14 +40,19 @@ public class WareHouseServiceImpl implements WareHouseService{
         Warehouse warehouse = wareHouseRepo.findById(id).orElseThrow(() -> {
             throw new ResourceNotFoundException("WareHouse", "wareHouse id", id);
         });
-        warehouse.setAddress(wh.getAddress());
-        warehouse.setName(wh.getName());
+        if(wh.getAddress()!=null)warehouse.setAddress(wh.getAddress());
+        if(wh.getName()!=null)warehouse.setName(wh.getName());
         wareHouseRepo.save(warehouse);
     }
 
     @Override
     public ArrayList<Warehouse> getWarehouseByOwner(User user) {
         return wareHouseRepo.findByOwner(user);
+    }
+
+    @Override
+    public void deleteWarehouse(Integer id) {
+        wareHouseRepo.deleteById(id);
     }
     
 }

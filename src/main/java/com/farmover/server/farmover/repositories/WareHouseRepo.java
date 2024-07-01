@@ -5,7 +5,6 @@ import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

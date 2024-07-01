@@ -2,7 +2,6 @@ package com.farmover.server.farmover.controllers;
 
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.repositories.UserRepo;
-import com.farmover.server.farmover.services.impl.UserServiceImpl;
 import com.farmover.server.farmover.services.impl.WareHouseServiceImpl;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,6 +51,13 @@ public class WareHouseController {
         wareHouseServiceImpl.updateWareHouse(ware,id);
         return new ResponseEntity<String>(ware.getName(),HttpStatus.OK); 
     }
+
+    @PostMapping("/deleteWarehouse")
+    public  ResponseEntity<String> deleteWarehouse(@RequestParam Integer id) {
+        wareHouseServiceImpl.deleteWarehouse(id);
+        return new ResponseEntity<String>("Deleted",HttpStatus.OK); 
+    }
+    
     
     
     

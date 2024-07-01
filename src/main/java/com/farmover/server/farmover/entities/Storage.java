@@ -2,6 +2,8 @@ package com.farmover.server.farmover.entities;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,6 +17,7 @@ import lombok.Data;
 @Entity
 @Table(name = "storage")
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Storage {
 
     @Id
@@ -35,5 +38,6 @@ public class Storage {
     private Double pricePerKg;
 
     @ManyToOne
+    @JsonIgnoreProperties("storages")
     private Warehouse warehouse;
 }

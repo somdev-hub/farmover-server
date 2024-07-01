@@ -34,6 +34,7 @@ public class Warehouse {
     private User owner;
 
     @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("warehouse") 
     private List<Storage> storages;
 
 }
