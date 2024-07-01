@@ -2,6 +2,7 @@ package com.farmover.server.farmover.services.impl;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,6 @@ import com.farmover.server.farmover.entities.Crops;
 import com.farmover.server.farmover.entities.Production;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
-import com.farmover.server.farmover.payloads.CropActivityDto;
 import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
 import com.farmover.server.farmover.repositories.CropActivityRepo;
@@ -57,6 +57,7 @@ public class ProductionServiceImpl implements ProductionService {
 
         cropActivity.setActivityTitle(productionDto.getStatus());
         cropActivity.setStartDate(LocalDate.now());
+        cropActivity.setActivityNumber(1);
         cropActivity.setProduction(production);
 
         production.getCropActivities().add(cropActivity);
@@ -84,14 +85,48 @@ public class ProductionServiceImpl implements ProductionService {
 
     @Override
     public ProductionDto updateProduction(ProductionDto productionDto, Integer token) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateProduction'");
+        Production production = productionRepo.findByToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Production", "token", Integer.toString(token)));
+
+        production.setQuantity(productionDto.getQuantity());
+        production.setStatus(productionDto.getStatus());
+
+        // Step 1: Retrieve the crop activity with the highest activityNumber
+        CropActivity latestCropActivity = production.getCropActivities().stream()
+                .max(Comparator.comparing(CropActivity::getActivityNumber))
+                .orElse(null);
+
+        // Step 2: Set the end date of the crop activity with the highest activityNumber
+        // to today if it exists
+        if (latestCropActivity != null) {
+            latestCropActivity.setEndDate(LocalDate.now());
+            cropActivityRepo.save(latestCropActivity); // Save the updated crop activity
+        }
+
+        // Continue with adding the new crop activity
+        CropActivity cropActivity = new CropActivity();
+        cropActivity.setActivityTitle(productionDto.getStatus());
+        cropActivity.setStartDate(LocalDate.now());
+        // Assuming activityNumber needs to be set here, increment from the highest
+        // number
+        cropActivity.setActivityNumber(latestCropActivity != null ? latestCropActivity.getActivityNumber() + 1 : 1);
+        cropActivity.setProduction(production);
+
+        production.getCropActivities().add(cropActivity);
+
+        cropActivityRepo.save(cropActivity);
+
+        productionRepo.save(production); // Save the production after adding the new crop activity
+
+        return modelMapper.map(production, ProductionDto.class);
     }
 
     @Override
     public void deleteProduction(Integer token) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteProduction'");
+        Production production = productionRepo.findByToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Production", "token", Integer.toString(token)));
+
+        productionRepo.delete(production);
     }
 
     @Override

@@ -16,5 +16,7 @@ public class CropActivityDto {
 
     private LocalDate endDate;
 
+    private Integer activityNumber;
+
     // private ProductionDto productionDto;
 }

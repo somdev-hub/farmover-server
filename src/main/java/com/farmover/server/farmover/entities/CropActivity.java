@@ -23,6 +23,8 @@ public class CropActivity {
 
     private String activityTitle;
 
+    private Integer activityNumber;
+
     private LocalDate startDate;
 
     private LocalDate endDate;
