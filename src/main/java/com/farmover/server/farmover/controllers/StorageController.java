@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.farmover.server.farmover.entities.Storage;
+import com.farmover.server.farmover.payloads.StorageDto;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.impl.StorageServiceImpl;
 
@@ -34,14 +35,14 @@ public class StorageController {
     }
 
     @GetMapping("/getStorage")
-    public Storage getStorage(@RequestParam Integer id) {
-        Storage storage = serviceImpl.geStorage(id);
-        return storage;
+    public StorageDto getStorage(@RequestParam Integer id) {
+        
+        return serviceImpl.geStorage(id);
     }
 
     @SuppressWarnings("deprecation")
     @GetMapping("/getAllStorageByWarehouse")
-    public  ArrayList<Storage> getAllStorageByWarehouse(@RequestParam Integer wareHouseid) {
+    public  ArrayList<StorageDto> getAllStorageByWarehouse(@RequestParam Integer wareHouseid) {
         return serviceImpl.getAllStorageByWarehouse(wareHouseRepo.getById(wareHouseid));
     }
 

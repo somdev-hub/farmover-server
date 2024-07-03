@@ -30,7 +30,7 @@ public class Warehouse {
     private String address;
 
     @ManyToOne
-     @JsonIgnoreProperties("managedWarehouses")
+    @JsonIgnoreProperties("managedWarehouses")
     private User owner;
 
     @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

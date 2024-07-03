@@ -1,7 +1,7 @@
 package com.farmover.server.farmover.controllers;
 
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.farmover.server.farmover.entities.Warehouse;
+import com.farmover.server.farmover.payloads.WareHouseDto;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.services.impl.WareHouseServiceImpl;
 
@@ -36,13 +37,13 @@ public class WareHouseController {
         return new ResponseEntity<String>(warehouse.getName(),HttpStatus.OK);
     }
     @GetMapping("/getWareHouse")
-    public Warehouse getWareHouse(@RequestParam Integer id) {
-        Warehouse warehouse = wareHouseServiceImpl.getWarehouse(id);
+    public WareHouseDto getWareHouse(@RequestParam Integer id) {
+        WareHouseDto warehouse = wareHouseServiceImpl.getWarehouse(id);
         return warehouse;
     }
     @SuppressWarnings("deprecation")
     @GetMapping("/getAllWareHouseByOwnerId")
-    public  ArrayList<Warehouse> getAllWareHouseByOwnerId(@RequestParam Integer ownerId) {
+    public  List<WareHouseDto> getAllWareHouseByOwnerId(@RequestParam Integer ownerId) {
         return wareHouseServiceImpl.getWarehouseByOwner(userRepo.getById(ownerId));
     }
     @PostMapping("/updateWareHouse")

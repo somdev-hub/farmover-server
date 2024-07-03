@@ -2,12 +2,14 @@ package com.farmover.server.farmover.services.impl;
 
 import java.util.ArrayList;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.Storage;
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
+import com.farmover.server.farmover.payloads.StorageDto;
 import com.farmover.server.farmover.repositories.StorageRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.StorageService;
@@ -18,12 +20,15 @@ public class StorageServiceImpl implements StorageService {
     StorageRepo storageRepo;
     @Autowired
     WareHouseRepo wareHouseRepo;
+    @Autowired
+    ModelMapper modelMapper;
 
     @Override
-    public Storage geStorage(Integer id) {
-        return storageRepo.findById(id).orElseThrow(() -> {
+    public StorageDto geStorage(Integer id) {
+        Storage storage = storageRepo.findById(id).orElseThrow(() -> {
             throw new ResourceNotFoundException("Storage", "Storage id", id);
         });
+        return modelMapper.map(storage, StorageDto.class);
     }
 
     @Override
@@ -49,8 +54,13 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public ArrayList<Storage> getAllStorageByWarehouse(Warehouse warehouse) {
-        return storageRepo.findByWarehouse(warehouse);
+    public ArrayList<StorageDto> getAllStorageByWarehouse(Warehouse warehouse) {
+        ArrayList<Storage>storages=storageRepo.findByWarehouse(warehouse);
+        ArrayList<StorageDto> storageDtos = new ArrayList<StorageDto>();
+        for(Storage storage:storages){
+            storageDtos.add(modelMapper.map(storage, StorageDto.class));
+        }
+        return storageDtos;
     }
 
     public void deleteStorage(Integer id) {
