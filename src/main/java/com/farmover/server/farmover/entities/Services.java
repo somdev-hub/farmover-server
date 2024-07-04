@@ -29,6 +29,8 @@ public class Services {
 
     private String serviceName;
 
+    private String serviceType;
+
     private String serviceDescription;
 
     private String serviceImage;
