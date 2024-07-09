@@ -21,4 +21,6 @@ public class StorageDto {
     private List<String> suitableFor;
 
     private Double pricePerKg;
+
+    private String img;
 }

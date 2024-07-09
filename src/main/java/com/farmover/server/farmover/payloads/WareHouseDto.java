@@ -9,4 +9,8 @@ public class WareHouseDto {
     private String name;
 
     private String address;
+    
+    private String warehouseImage;
+
+    private String warehouseBackground;
 }

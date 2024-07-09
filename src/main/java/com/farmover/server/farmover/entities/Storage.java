@@ -2,6 +2,8 @@ package com.farmover.server.farmover.entities;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Entity;
@@ -36,6 +38,7 @@ public class Storage {
     private List<String> suitableFor;
 
     private Double pricePerKg;
+    private String img;
 
     @ManyToOne
     @JsonIgnoreProperties("storages")

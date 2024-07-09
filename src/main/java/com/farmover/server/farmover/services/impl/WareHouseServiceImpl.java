@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.services.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +12,11 @@ import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.WareHouseDto;
+import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.WareHouseService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class WareHouseServiceImpl implements WareHouseService {
@@ -23,22 +26,42 @@ public class WareHouseServiceImpl implements WareHouseService {
     UserRepo userRepo;
     @Autowired
     ModelMapper modelMapper;
+    @Autowired
+    ObjectMapper objectMapper;
+    @Autowired
+    S3ServiceImpl s3ServiceImpl;
 
     @Override
     public WareHouseDto getWarehouse(Integer id) {
-        Warehouse warehouse =wareHouseRepo.findById(id).orElseThrow(() -> {
+        Warehouse warehouse = wareHouseRepo.findById(id).orElseThrow(() -> {
             throw new ResourceNotFoundException("WareHouse", "wareHouse id", id);
         });
         return modelMapper.map(warehouse, WareHouseDto.class);
     }
 
     @Override
-    public void addWareHouse(Integer userId, Warehouse warehouse) {
+    public void addWareHouse(Integer userId, WarehouseRequestDto requestDto) {
         User owner = userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        Warehouse warehouse = modelMapper.map(requestDto, Warehouse.class);
         warehouse.setOwner(owner);
+        String bg="";
+        try {
+            bg = s3ServiceImpl.uploadFile(requestDto.getWarehouseBackground());
+        } catch (IOException e) {
+            throw new RuntimeException("Image not found");
+        }
+        String imString ="";
+        try {
+            imString = s3ServiceImpl.uploadFile(requestDto.getWarehouseImage());
+        } catch (IOException e) {
+            throw new RuntimeException("Image not found");
+        }
+        warehouse.setWarehouseBackground(bg);
+        warehouse.setWarehouseImage(imString);
         wareHouseRepo.save(warehouse);
+    
     }
 
     @Override
@@ -55,9 +78,9 @@ public class WareHouseServiceImpl implements WareHouseService {
 
     @Override
     public List<WareHouseDto> getWarehouseByOwner(User user) {
-        List<Warehouse> warehouses =  wareHouseRepo.findByOwner(user);
+        List<Warehouse> warehouses = wareHouseRepo.findByOwner(user);
         List<WareHouseDto> wareHouseDtos = new ArrayList<WareHouseDto>();
-        for(Warehouse warehouse: warehouses){
+        for (Warehouse warehouse : warehouses) {
             wareHouseDtos.add(modelMapper.map(warehouse, WareHouseDto.class));
         }
         return wareHouseDtos;

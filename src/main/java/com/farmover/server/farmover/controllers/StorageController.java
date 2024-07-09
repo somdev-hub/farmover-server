@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.farmover.server.farmover.entities.Storage;
 import com.farmover.server.farmover.payloads.StorageDto;
+import com.farmover.server.farmover.payloads.request.StorageRequestDto;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.impl.StorageServiceImpl;
 
@@ -29,9 +31,9 @@ public class StorageController {
 
 
     @PostMapping("/addStorage")
-    public ResponseEntity<String> addStorage(@RequestParam Integer wareId,@RequestBody Storage storage) {
+    public ResponseEntity<String> addStorage(@RequestParam Integer wareId,@ModelAttribute StorageRequestDto storage) {
         serviceImpl.addStorage(wareId,storage);
-        return new ResponseEntity<String>(storage.getId()+"",HttpStatus.OK);
+        return new ResponseEntity<String>("Added",HttpStatus.OK);
     }
 
     @GetMapping("/getStorage")

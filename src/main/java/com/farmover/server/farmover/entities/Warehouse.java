@@ -28,6 +28,10 @@ public class Warehouse {
     private String name;
 
     private String address;
+    
+    private String warehouseImage;
+
+    private String warehouseBackground;
 
     @ManyToOne
     @JsonIgnoreProperties("managedWarehouses")
