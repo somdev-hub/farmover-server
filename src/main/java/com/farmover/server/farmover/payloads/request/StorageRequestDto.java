@@ -19,5 +19,6 @@ public class StorageRequestDto {
 
     private String pricePerKg;
 
-    private MultipartFile img;
+    private String suitableFor;
+
 }
