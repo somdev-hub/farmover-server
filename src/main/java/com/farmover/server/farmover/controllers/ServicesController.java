@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.farmover.server.farmover.payloads.ContractDetailsDto;
 import com.farmover.server.farmover.payloads.ServicesDashboardDto;
 import com.farmover.server.farmover.payloads.ServicesDto;
 import com.farmover.server.farmover.payloads.request.ServicesRequestDto;
@@ -49,6 +48,21 @@ public class ServicesController {
     public ResponseEntity<List<ServicesDashboardDto>> getDashboardServices(@RequestParam String email) {
         return new ResponseEntity<List<ServicesDashboardDto>>(servicesService.getDashboardServices(email),
                 HttpStatus.OK);
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<List<ServicesDashboardDto>> getServicesByOwner(@RequestParam String email) {
+        return new ResponseEntity<List<ServicesDashboardDto>>(servicesService.getServicesByOwner(email), HttpStatus.OK);
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<ServicesDashboardDto>> getAvailableServices() {
+        return new ResponseEntity<List<ServicesDashboardDto>>(servicesService.getAvailableServices(), HttpStatus.OK);
+    }
+
+    @GetMapping("/contract-details/")
+    public ResponseEntity<List<ContractDetailsDto>> getContractDetails(@RequestParam String email) {
+        return new ResponseEntity<List<ContractDetailsDto>>(servicesService.getContractDetails(email), HttpStatus.OK);
     }
 
 }

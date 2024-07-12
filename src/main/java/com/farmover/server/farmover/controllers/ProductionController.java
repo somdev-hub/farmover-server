@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
+import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
 import com.farmover.server.farmover.services.impl.ProductionServiceImpl;
 
 @RestController
@@ -73,4 +74,12 @@ public class ProductionController {
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PostMapping("/add-service")
+    public ResponseEntity<?> addServiceToProduction(@RequestBody AddServiceToProductionDto addServiceToProductionDto) {
+        productionService.addServiceToProduction(addServiceToProductionDto);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
 }

@@ -1,6 +1,9 @@
 package com.farmover.server.farmover.payloads;
 
+import java.time.LocalDate;
 import java.util.List;
+
+import com.farmover.server.farmover.entities.ServiceStatus;
 
 import lombok.Data;
 
@@ -11,7 +14,7 @@ public class ServicesDto {
 
     private UserDto owner;
 
-    private boolean availability;
+    private ServiceStatus status;
 
     private String serviceName;
 
@@ -21,9 +24,9 @@ public class ServicesDto {
 
     private String serviceImage;
 
-    private Double pricePerHour;
+    private Double pricePerDay;
 
-    private List<String> features;
+    private List<ServiceFeaturesDto> features;
 
     private String machineType;
 
@@ -31,5 +34,10 @@ public class ServicesDto {
 
     private String fuelType;
 
-    private List<ProductionDto> productions;
+    private LocalDate commencedDate;
+
+    private LocalDate lastOperated;
+
+    private LocalDate lastRepaired;
+
 }

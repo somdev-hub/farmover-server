@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.services.impl;
 
+import java.util.ArrayList;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,6 +40,8 @@ public class AuthServiceImpl {
         user.setPhone(userDto.getPhone());
         user.setAddress(userDto.getAddress());
         user.setRole(userDto.getRole());
+
+        user.setTransactions(new ArrayList<>());
 
         User savedUser = userRepo.save(user);
 

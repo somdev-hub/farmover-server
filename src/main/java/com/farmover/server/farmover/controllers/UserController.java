@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.farmover.server.farmover.payloads.TransactionsDto;
 import com.farmover.server.farmover.payloads.UserDto;
 import com.farmover.server.farmover.services.UserService;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @CrossOrigin
@@ -37,6 +39,12 @@ public class UserController {
         List<UserDto> allUsers = userService.getAllUsers();
 
         return new ResponseEntity<List<UserDto>>(allUsers, HttpStatus.OK);
+    }
+
+    @GetMapping("/transactions/{email}")
+    public ResponseEntity<List<TransactionsDto>> getUserTransactions(@PathVariable String email) {
+        List<TransactionsDto> transactions = userService.getUserTransactions(email);
+        return new ResponseEntity<List<TransactionsDto>>(transactions, HttpStatus.OK);
     }
 
 }

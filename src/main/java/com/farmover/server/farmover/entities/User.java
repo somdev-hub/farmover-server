@@ -42,8 +42,11 @@ public class User implements UserDetails {
     Role role;
 
     private String phone;
-    
+
     private String address;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Transactions> transactions;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Warehouse> managedWarehouses;

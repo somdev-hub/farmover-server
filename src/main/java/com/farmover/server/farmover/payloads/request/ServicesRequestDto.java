@@ -1,7 +1,5 @@
 package com.farmover.server.farmover.payloads.request;
 
-import java.util.List;
-
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Data;
@@ -12,7 +10,7 @@ public class ServicesRequestDto {
 
     private String email;
 
-    private String availability;
+    private String status;
 
     private String serviceName;
 
@@ -22,7 +20,7 @@ public class ServicesRequestDto {
 
     private MultipartFile serviceImage;
 
-    private String pricePerHour;
+    private String pricePerDay;
 
     private String features;
 

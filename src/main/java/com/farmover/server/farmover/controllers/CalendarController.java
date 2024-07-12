@@ -3,6 +3,7 @@ package com.farmover.server.farmover.controllers;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.farmover.server.farmover.entities.Role;
 import com.farmover.server.farmover.payloads.CalendarEventsDto;
 import com.farmover.server.farmover.services.impl.CalendarServiceImpl;
 
@@ -24,9 +25,10 @@ public class CalendarController {
     private CalendarServiceImpl calendarService;
 
     @GetMapping("/get-events")
-    public ResponseEntity<List<CalendarEventsDto>> getCalendarEvents(@RequestParam String email) {
+    public ResponseEntity<List<CalendarEventsDto>> getCalendarEvents(@RequestParam String email,
+            @RequestParam Role role) {
 
-        List<CalendarEventsDto> calendarEvents = calendarService.getCalendarEvents(email);
+        List<CalendarEventsDto> calendarEvents = calendarService.getCalendarEvents(email, role);
 
         return new ResponseEntity<List<CalendarEventsDto>>(calendarEvents, HttpStatus.OK);
     }

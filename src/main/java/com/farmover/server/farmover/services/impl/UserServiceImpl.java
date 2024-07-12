@@ -6,8 +6,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.farmover.server.farmover.entities.Transactions;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
+import com.farmover.server.farmover.payloads.TransactionsDto;
 import com.farmover.server.farmover.payloads.UserDto;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.services.UserService;
@@ -80,6 +82,20 @@ public class UserServiceImpl implements UserService {
         List<UserDto> users = userRepo.findAll().stream().map(user -> modelMapper.map(user, UserDto.class)).toList();
 
         return users;
+    }
+
+    @Override
+    public List<TransactionsDto> getUserTransactions(String email) {
+        User user = userRepo.findByEmail(email).orElseThrow(() -> {
+            throw new ResourceNotFoundException("User", "email", email);
+        });
+
+        List<Transactions> transactions = user.getTransactions();
+
+        List<TransactionsDto> transactionsDtos = transactions.stream()
+                .map(transaction -> modelMapper.map(transaction, TransactionsDto.class)).toList();
+
+        return transactionsDtos;
     }
 
 }
