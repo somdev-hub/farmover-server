@@ -13,4 +13,6 @@ public class WareHouseDto {
     private String warehouseImage;
 
     private String warehouseBackground;
+
+  
 }

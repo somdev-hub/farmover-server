@@ -17,5 +17,6 @@ public class WarehouseRequestDto {
     private MultipartFile warehouseImage;
 
     private MultipartFile warehouseBackground;
+    private String facilities;
 
 }

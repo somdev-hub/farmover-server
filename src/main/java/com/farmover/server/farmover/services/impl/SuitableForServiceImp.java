@@ -22,7 +22,7 @@ public class SuitableForServiceImp implements SuitableForService {
     @Override
     public void addToStorage(int storageId, String name) {
         Storage storage = rStorageRepo.findById(storageId).orElseThrow(() -> {
-            throw new ResourceNotFoundException("Storage", "Storage id", storageId);
+            throw new ResourceNotFoundException("Storage", "Storage id", Integer.toString(storageId));
         });
         SuitableFor suitableFor =new SuitableFor();
         suitableFor.setName(name);
@@ -33,7 +33,7 @@ public class SuitableForServiceImp implements SuitableForService {
     @Override
     public List<String> getAllByStorage(int storageId) {
         Storage storage = rStorageRepo.findById(storageId).orElseThrow(() -> {
-            throw new ResourceNotFoundException("Storage", "Storage id", storageId);
+            throw new ResourceNotFoundException("Storage", "Storage id", Integer.toString(storageId));
         });
         
         List<SuitableFor> suitableFor = repo.findByStorage(storage);

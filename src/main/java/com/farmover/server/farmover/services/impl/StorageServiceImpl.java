@@ -36,7 +36,7 @@ public class StorageServiceImpl implements StorageService {
     @Override
     public StorageDto geStorage(Integer id) {
         Storage storage = storageRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("Storage", "Storage id", id);
+            throw new ResourceNotFoundException("Storage", "Storage id", id.toString());
         });
 
         StorageDto dto = modelMapper.map(storage, StorageDto.class);

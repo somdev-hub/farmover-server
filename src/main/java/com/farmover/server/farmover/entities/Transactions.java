@@ -2,38 +2,48 @@ package com.farmover.server.farmover.entities;
 
 import java.sql.Date;
 
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "transaction")
 @Data
+@NoArgsConstructor
 public class Transactions {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private Integer amount;
+    @Nonnull
+    private Double amount;
 
+    @Nonnull
     private String buyer;
 
+    @Nonnull
     private String seller;
 
     private String item;
 
+    @Nonnull
     private Date date;
 
     private String type;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bank_id")
-    private Bank bank;
+    @Enumerated(EnumType.STRING)
+    @Nonnull
+    private TransactionType transactionType;
+
+    @ManyToOne
+    private User user;
 }

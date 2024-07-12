@@ -6,8 +6,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.farmover.server.farmover.entities.Transactions;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
+import com.farmover.server.farmover.payloads.TransactionsDto;
 import com.farmover.server.farmover.payloads.UserDto;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.services.UserService;
@@ -24,7 +26,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUser(Integer id) {
         User user = userRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "user id", id);
+            throw new ResourceNotFoundException("User", "user id", Integer.toString(id));
         });
 
         return modelMapper.map(user, UserDto.class);
@@ -33,7 +35,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(UserDto userDto, Integer id) {
         User user = userRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "user id", id);
+            throw new ResourceNotFoundException("User", "user id", Integer.toString(id));
         });
 
         user.setUname(userDto.getUname());
@@ -50,7 +52,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Integer id) {
         User user = userRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "user id", id);
+            throw new ResourceNotFoundException("User", "user id", Integer.toString(id));
         });
 
         userRepo.delete(user);
@@ -59,7 +61,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserByEmail(String email) {
         User user = userRepo.findByEmail(email).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "email" + email, 0);
+            throw new ResourceNotFoundException("User", "email", email);
         });
 
         return modelMapper.map(user, UserDto.class);
@@ -68,7 +70,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(Integer id) {
         User user = userRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "user id", id);
+            throw new ResourceNotFoundException("User", "user id", Integer.toString(id));
         });
 
         return modelMapper.map(user, UserDto.class);
@@ -80,6 +82,20 @@ public class UserServiceImpl implements UserService {
         List<UserDto> users = userRepo.findAll().stream().map(user -> modelMapper.map(user, UserDto.class)).toList();
 
         return users;
+    }
+
+    @Override
+    public List<TransactionsDto> getUserTransactions(String email) {
+        User user = userRepo.findByEmail(email).orElseThrow(() -> {
+            throw new ResourceNotFoundException("User", "email", email);
+        });
+
+        List<Transactions> transactions = user.getTransactions();
+
+        List<TransactionsDto> transactionsDtos = transactions.stream()
+                .map(transaction -> modelMapper.map(transaction, TransactionsDto.class)).toList();
+
+        return transactionsDtos;
     }
 
 }

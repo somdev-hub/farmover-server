@@ -33,6 +33,8 @@ public class Warehouse {
 
     private String warehouseBackground;
 
+    private List<String> facilities;
+
     @ManyToOne
     @JsonIgnoreProperties("managedWarehouses")
     private User owner;

@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.services.impl;
 
+import java.util.ArrayList;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,6 +44,8 @@ public class AuthServiceImpl {
         user.setAddress(userDto.getAddress());
         user.setRole(userDto.getRole());
 
+        user.setTransactions(new ArrayList<>());
+
         User savedUser = userRepo.save(user);
 
         String token = jwtService.generateToken(savedUser);
@@ -59,7 +62,7 @@ public class AuthServiceImpl {
                 .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
         User byUsername = userRepo.findByEmail(user.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("user", "username " + user.getUsername(), 0));
+                .orElseThrow(() -> new ResourceNotFoundException("user", "username", user.getUsername()));
 
         String token = jwtService.generateToken(byUsername);
 

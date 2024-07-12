@@ -2,6 +2,7 @@ package com.farmover.server.farmover.services;
 
 import java.util.List;
 
+import com.farmover.server.farmover.payloads.TransactionsDto;
 import com.farmover.server.farmover.payloads.UserDto;
 
 public interface UserService {
@@ -9,7 +10,7 @@ public interface UserService {
 
     UserDto getUser(Integer id);
 
-    UserDto updateUser(UserDto userDto,Integer id);
+    UserDto updateUser(UserDto userDto, Integer id);
 
     void deleteUser(Integer id);
 
@@ -19,5 +20,6 @@ public interface UserService {
 
     List<UserDto> getAllUsers();
 
-    
+    List<TransactionsDto> getUserTransactions(String email);
+
 }

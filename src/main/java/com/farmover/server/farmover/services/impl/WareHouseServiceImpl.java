@@ -34,7 +34,7 @@ public class WareHouseServiceImpl implements WareHouseService {
     @Override
     public WareHouseDto getWarehouse(Integer id) {
         Warehouse warehouse = wareHouseRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("WareHouse", "wareHouse id", id);
+            throw new ResourceNotFoundException("WareHouse", "wareHouse id", id.toString());
         });
         return modelMapper.map(warehouse, WareHouseDto.class);
     }
@@ -67,7 +67,7 @@ public class WareHouseServiceImpl implements WareHouseService {
     @Override
     public void updateWareHouse(Warehouse wh, Integer id) {
         Warehouse warehouse = wareHouseRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("WareHouse", "wareHouse id", id);
+            throw new ResourceNotFoundException("WareHouse", "wareHouse id", id.toString());
         });
         if (wh.getAddress() != null)
             warehouse.setAddress(wh.getAddress());

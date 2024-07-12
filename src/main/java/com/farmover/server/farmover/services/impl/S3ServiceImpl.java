@@ -19,6 +19,11 @@ public class S3ServiceImpl {
 
     private String bucketName = "farmover-main";
 
+    // private String accessKey = "CF93D06BB12FD24B1976";
+
+    // private String secretKey = "RTFNlN5nra6RQNiI2O5b4pLRjnFIwVjNptMa9FHV";
+
+    // private AmazonS3 s3Client;
 
     @Autowired
     private S3Client s3Client;

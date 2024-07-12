@@ -1,12 +1,21 @@
 package com.farmover.server.farmover.entities;
 
-import java.sql.Date;
+import java.time.LocalDate;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -19,16 +28,22 @@ public class Production {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer token;
 
-    private String crop;
+    @Enumerated(EnumType.STRING)
+    private Crops crop;
 
-    private String quentity;
+    private Long quantity;
 
-    private Date date;
+    private LocalDate date;
+
+    @OneToMany(mappedBy = "production", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<CropActivity> cropActivities;
 
     @ManyToOne
     private User farmer;
 
-    private String services;
+    @ManyToMany(mappedBy = "productions")
+    private List<Services> services;
 
     private String status;
 
