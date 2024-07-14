@@ -2,6 +2,7 @@ package com.farmover.server.farmover.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.farmover.server.farmover.entities.LoginRequest;
 import com.farmover.server.farmover.payloads.AuthenticationResponse;
 import com.farmover.server.farmover.payloads.UserDto;
 import com.farmover.server.farmover.services.impl.AuthServiceImpl;
@@ -27,9 +28,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody UserDto userDto) {
-        AuthenticationResponse authenticatedUser = authService.authenticate(userDto);
-        System.out.println(userDto.getEmail());
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequest request) {
+        AuthenticationResponse authenticatedUser = authService.authenticate(request);
+       
         return ResponseEntity.ok(authenticatedUser);
     }
 

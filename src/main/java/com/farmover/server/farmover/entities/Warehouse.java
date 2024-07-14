@@ -2,6 +2,8 @@ package com.farmover.server.farmover.entities;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,6 +18,7 @@ import lombok.Data;
 @Entity
 @Table(name = "warehouses")
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Warehouse {
 
     @Id
@@ -25,7 +28,7 @@ public class Warehouse {
     private String name;
 
     private String address;
-
+    
     private String warehouseImage;
 
     private String warehouseBackground;
@@ -33,9 +36,11 @@ public class Warehouse {
     private List<String> facilities;
 
     @ManyToOne
+    @JsonIgnoreProperties("managedWarehouses")
     private User owner;
 
     @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("warehouse") 
     private List<Storage> storages;
 
 }
