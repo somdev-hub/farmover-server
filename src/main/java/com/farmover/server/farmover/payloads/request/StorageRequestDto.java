@@ -1,23 +1,21 @@
 package com.farmover.server.farmover.payloads.request;
 
-
-
-import org.springframework.web.multipart.MultipartFile;
-
+import com.farmover.server.farmover.entities.StorageType;
 
 import lombok.Data;
+
 @Data
 public class StorageRequestDto {
-   
-    private String storageType;
 
-    private String capacity; // in tons
+    private StorageType storageType;
 
-    private String temperature; // in celsius
+    private Double capacity; // in tons
+
+    private Double temperature; // in celsius
 
     private String areaNumber;
 
-    private String pricePerKg;
+    private Double pricePerKg;
 
     private String suitableFor;
 

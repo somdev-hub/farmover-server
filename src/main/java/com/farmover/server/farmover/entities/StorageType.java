@@ -10,4 +10,5 @@ public enum StorageType {
     VEGETABLE_STORAGE,
     MEAT_STORAGE,
     FISH_STORAGE,
+    POULTRY_STORAGE,
 }

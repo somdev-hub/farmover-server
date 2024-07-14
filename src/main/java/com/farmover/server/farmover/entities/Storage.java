@@ -16,11 +16,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+
 // to do normalize the suitable for
 @Entity
 @Table(name = "storage")
 @Data
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Storage {
 
     @Id
@@ -30,12 +31,11 @@ public class Storage {
     @Enumerated(EnumType.STRING)
     private StorageType storageType;
 
-    private Integer capacity; // in tons
+    private Double capacity; // in tons
 
-    private String temperature; // in celsius
+    private Double temperature; // in celsius
 
     private String areaNumber;
-
 
     private Double pricePerKg;
 
@@ -43,7 +43,11 @@ public class Storage {
     @JsonIgnoreProperties("storages")
     private Warehouse warehouse;
 
+    private String suitableFor;
+
+    private Double availableCapacity;
+
     @OneToMany(mappedBy = "storage", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties("storage") 
-    private List<SuitableFor> suitableFors;
+    private List<StorageBookings> storageBookings;
+
 }

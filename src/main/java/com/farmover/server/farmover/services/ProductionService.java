@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
+import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
 
 public interface ProductionService {
@@ -29,5 +30,7 @@ public interface ProductionService {
     List<ProductionDto> getAllProductions();
 
     void addServiceToProduction(AddServiceToProductionDto addServiceToProductionDto);
+
+    void addProductionToWarehouse(AddProductionToWarehouseDto dto, String email);
 
 }

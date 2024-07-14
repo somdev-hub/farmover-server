@@ -5,7 +5,7 @@ import com.farmover.server.farmover.entities.StorageType;
 import lombok.Data;
 
 @Data
-public class StorageDto {
+public class StorageCardDto {
 
     private Integer id;
 
@@ -13,12 +13,5 @@ public class StorageDto {
 
     private Double capacity; // in tons
 
-    private Double temperature; // in celsius
-
-    private String areaNumber;
-
-    private String suitableFor;
-
-    private Double pricePerKg;
-
+    private Double availableCapacity;
 }

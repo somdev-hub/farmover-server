@@ -1,21 +1,31 @@
 package com.farmover.server.farmover.services.impl;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.farmover.server.farmover.entities.Storage;
+import com.farmover.server.farmover.entities.StorageBookings;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
+import com.farmover.server.farmover.entities.WarehouseFacilities;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.WareHouseDto;
+import com.farmover.server.farmover.payloads.WarehouseCardDto;
+import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.WareHouseService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -36,32 +46,48 @@ public class WareHouseServiceImpl implements WareHouseService {
         Warehouse warehouse = wareHouseRepo.findById(id).orElseThrow(() -> {
             throw new ResourceNotFoundException("WareHouse", "wareHouse id", id.toString());
         });
-        return modelMapper.map(warehouse, WareHouseDto.class);
+
+        WareHouseDto warehouseDto = modelMapper.map(warehouse, WareHouseDto.class);
+        warehouseDto.setFacilityList(warehouse.getFacilities().stream().map(WarehouseFacilities::getFacility)
+                .collect(Collectors.toList()));
+        return warehouseDto;
     }
 
     @Override
-    public void addWareHouse(Integer userId, WarehouseRequestDto requestDto) {
-        User owner = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public void addWareHouse(String email, WarehouseRequestDto requestDto) throws IOException {
+        User owner = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
         Warehouse warehouse = modelMapper.map(requestDto, Warehouse.class);
         warehouse.setOwner(owner);
-        String bg="";
-        try {
-            bg = s3ServiceImpl.uploadFile(requestDto.getWarehouseBackground());
-        } catch (IOException e) {
-            throw new RuntimeException("Image not found");
+
+        List<String> facilityStrings = objectMapper.readValue(requestDto.getFacilities(),
+                new TypeReference<List<String>>() {
+                });
+
+        List<WarehouseFacilities> warehouseFacilities = new ArrayList<>();
+
+        for (String facility : facilityStrings) {
+            WarehouseFacilities warehouseFacility = new WarehouseFacilities();
+            warehouseFacility.setFacility(facility);
+            warehouseFacility.setWarehouse(warehouse);
+            warehouseFacilities.add(warehouseFacility);
         }
-        String imString ="";
-        try {
-            imString = s3ServiceImpl.uploadFile(requestDto.getWarehouseImage());
-        } catch (IOException e) {
-            throw new RuntimeException("Image not found");
-        }
+
+        warehouse.setFacilities(warehouseFacilities);
+
+        String bg = "";
+
+        bg = s3ServiceImpl.uploadFile(requestDto.getWarehouseBackground());
+
+        String imString = "";
+
+        imString = s3ServiceImpl.uploadFile(requestDto.getWarehouseImage());
+
         warehouse.setWarehouseBackground(bg);
         warehouse.setWarehouseImage(imString);
         wareHouseRepo.save(warehouse);
-    
+
     }
 
     @Override
@@ -77,18 +103,36 @@ public class WareHouseServiceImpl implements WareHouseService {
     }
 
     @Override
-    public List<WareHouseDto> getWarehouseByOwner(User user) {
-        List<Warehouse> warehouses = wareHouseRepo.findByOwner(user);
-        List<WareHouseDto> wareHouseDtos = new ArrayList<WareHouseDto>();
-        for (Warehouse warehouse : warehouses) {
-            wareHouseDtos.add(modelMapper.map(warehouse, WareHouseDto.class));
-        }
-        return wareHouseDtos;
+    public WareHouseDto getWarehouseByOwner(User user) {
+        Warehouse warehouses = wareHouseRepo.findByOwner(user);
+
+        return modelMapper.map(warehouses, WareHouseDto.class);
     }
 
     @Override
     public void deleteWarehouse(Integer id) {
         wareHouseRepo.deleteById(id);
+    }
+
+    @Override
+    public List<WarehouseCardDto> getWarehouses() {
+        return wareHouseRepo.findAll().stream().map(warehouse -> {
+            WarehouseCardDto dto = new WarehouseCardDto();
+            dto.setId(warehouse.getId());
+            dto.setName(warehouse.getName());
+            dto.setAddress(warehouse.getAddress());
+            dto.setWarehouseImage(warehouse.getWarehouseImage());
+            dto.setOwnership(warehouse.getOwnership());
+            // Convert storages to a map using Stream API
+            Map<String, Double> storagesMap = warehouse.getStorages().stream()
+                    .collect(Collectors.toMap(
+                            storage -> storage.getStorageType().toString(),
+                            Storage::getPricePerKg,
+                            (existingValue, newValue) -> existingValue)); // In case of duplicate keys, keep the
+                                                                          // existing value
+            dto.setStorages(storagesMap);
+            return dto;
+        }).collect(Collectors.toList()); // Use collect to convert the stream back to a list
     }
 
 }

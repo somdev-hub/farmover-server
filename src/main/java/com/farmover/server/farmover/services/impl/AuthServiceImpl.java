@@ -8,11 +8,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.farmover.server.farmover.entities.LoginRequest;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.AuthenticationResponse;
 import com.farmover.server.farmover.payloads.UserDto;
+import com.farmover.server.farmover.payloads.request.LoginRequest;
+import com.farmover.server.farmover.payloads.request.UserRequestDto;
 import com.farmover.server.farmover.repositories.UserRepo;
 
 import lombok.Data;
@@ -33,7 +34,7 @@ public class AuthServiceImpl {
     @Autowired
     UserServiceImpl userServiceImpl;
 
-    public AuthenticationResponse register(UserDto userDto) {
+    public AuthenticationResponse register(UserRequestDto userDto) {
 
         User user = modelMapper.map(userDto, User.class);
 
@@ -54,8 +55,8 @@ public class AuthServiceImpl {
     }
 
     public AuthenticationResponse authenticate(LoginRequest request) {
-        UserDto userDto = userServiceImpl.getUserByEmail(request.getEmail());
-        userDto.setPassword(request.getPassword());
+        // UserDto userDto = userServiceImpl.getUserByEmail(request.getEmail());
+        // userDto.setPassword(request.getPassword());
         User user = modelMapper.map(request, User.class);
 
         authenticationManager
