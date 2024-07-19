@@ -1,9 +1,7 @@
 package com.farmover.server.farmover.services.impl;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,15 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.Storage;
-import com.farmover.server.farmover.entities.StorageBookings;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.entities.WarehouseFacilities;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
+import com.farmover.server.farmover.payloads.StorageBookingsDto;
 import com.farmover.server.farmover.payloads.WareHouseDto;
 import com.farmover.server.farmover.payloads.WarehouseCardDto;
-import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
+import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.WareHouseService;
@@ -40,6 +38,8 @@ public class WareHouseServiceImpl implements WareHouseService {
     ObjectMapper objectMapper;
     @Autowired
     S3ServiceImpl s3ServiceImpl;
+    @Autowired
+    ProductionRepo productionRepo;
 
     @Override
     public WareHouseDto getWarehouse(Integer id) {
@@ -103,10 +103,16 @@ public class WareHouseServiceImpl implements WareHouseService {
     }
 
     @Override
-    public WareHouseDto getWarehouseByOwner(User user) {
-        Warehouse warehouses = wareHouseRepo.findByOwner(user);
+    public WareHouseDto getWarehouseByOwner(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
-        return modelMapper.map(warehouses, WareHouseDto.class);
+        Warehouse warehouses = wareHouseRepo.findByOwner(user);
+        WareHouseDto warehouseDto = modelMapper.map(warehouses, WareHouseDto.class);
+        warehouseDto.setFacilityList(warehouses.getFacilities().stream().map(WarehouseFacilities::getFacility)
+                .collect(Collectors.toList()));
+
+        return warehouseDto;
     }
 
     @Override
@@ -133,6 +139,29 @@ public class WareHouseServiceImpl implements WareHouseService {
             dto.setStorages(storagesMap);
             return dto;
         }).collect(Collectors.toList()); // Use collect to convert the stream back to a list
+    }
+
+    @Override
+    public List<StorageBookingsDto> getBookings(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        List<StorageBookingsDto> bookings = new ArrayList<>();
+        wareHouseRepo.findByOwner(user).getStorages().forEach(storage -> {
+            storage.getStorageBookings().forEach(booking -> {
+                StorageBookingsDto bookingDto = modelMapper.map(booking, StorageBookingsDto.class);
+                bookingDto.setStorageType(storage.getStorageType());
+                bookingDto.setCrop(
+                        productionRepo.findByToken(booking.getProductionToken())
+                                .orElseThrow(() -> new ResourceNotFoundException("Production", "token",
+                                        booking.getProductionToken().toString()))
+                                .getCrop());
+
+                bookings.add(bookingDto);
+            });
+        });
+
+        return bookings;
     }
 
 }

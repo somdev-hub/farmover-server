@@ -310,7 +310,7 @@ public class ProductionServiceImpl implements ProductionService {
                                 .findFirst().orElseThrow(() -> new ResourceNotFoundException("Storage", "storage type",
                                                 dto.getStorageType().toString()));
 
-                if (storage.getAvailableCapacity() < dto.getWeight()) {
+                if (storage.getAvailableCapacity() < (dto.getWeight() / 1000.0)) {
                         throw new RuntimeException("Not enough capacity");
                 }
 
@@ -328,6 +328,26 @@ public class ProductionServiceImpl implements ProductionService {
 
                 user.getTransactions().add(userTransaction);
                 warehouse.getOwner().getTransactions().add(warehouseTransaction);
+
+                production.setStatus("stored");
+
+                // Update the end date of the latest CropActivity
+                production.getCropActivities().stream()
+                                .max(Comparator.comparing(CropActivity::getActivityNumber))
+                                .ifPresent(latestCropActivity -> {
+                                        latestCropActivity.setEndDate(LocalDate.now());
+                                        cropActivityRepo.save(latestCropActivity);
+                                });
+
+                // Create and add a new CropActivity for "Stored"
+                CropActivity newCropActivity = new CropActivity();
+                newCropActivity.setActivityTitle("Stored");
+                newCropActivity.setStartDate(LocalDate.now());
+                newCropActivity.setEndDate(LocalDate.now());
+                newCropActivity.setActivityNumber(production.getCropActivities().size() + 1);
+                newCropActivity.setProduction(production);
+
+                production.getCropActivities().add(newCropActivity);
 
                 // Batch save entities
                 userRepo.save(user);
@@ -350,6 +370,7 @@ public class ProductionServiceImpl implements ProductionService {
                 booking.setItemUnit(dto.getMinimumUnit());
                 booking.setMarkForSale(dto.getMarkForSale());
                 booking.setProductionToken(token);
+                booking.setCropName(productionRepo.findByToken(token).get().getCrop());
                 booking.setStatus("booked");
                 return booking;
         }

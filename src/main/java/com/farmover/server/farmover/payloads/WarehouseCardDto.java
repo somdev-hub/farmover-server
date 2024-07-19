@@ -1,6 +1,5 @@
 package com.farmover.server.farmover.payloads;
 
-import java.util.List;
 import java.util.Map;
 
 import com.farmover.server.farmover.entities.WarehouseOwnership;

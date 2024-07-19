@@ -21,4 +21,6 @@ public class StorageDto {
 
     private Double pricePerKg;
 
+    private Double availableCapacity;
+
 }

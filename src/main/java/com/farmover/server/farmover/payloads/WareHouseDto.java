@@ -2,7 +2,6 @@ package com.farmover.server.farmover.payloads;
 
 import java.util.List;
 
-import com.farmover.server.farmover.entities.WarehouseFacilities;
 import com.farmover.server.farmover.entities.WarehouseOwnership;
 
 import lombok.Data;

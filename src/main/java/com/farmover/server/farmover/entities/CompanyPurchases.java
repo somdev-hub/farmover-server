@@ -13,37 +13,29 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "storage_bookings")
+@Table(name = "company_purchases")
 @Data
-public class StorageBookings {
+public class CompanyPurchases {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne
-    private Storage storage;
+    private Company company;
 
-    private LocalDate bookingDate;
+    private LocalDate purchaseDate;
 
-    private Integer bookingDuration;
+    private Double purchaseQuantity;
 
-    private Double bookedWeight;
+    private Double purchasePrice;
 
-    private Double bookedPrice;
-
-    private Double itemPrice;
-
-    private String itemUnit;
-
-    private Boolean markForSale;
+    private Double purchaseTotal;
 
     private String status;
 
-    private Integer productionToken;
+    // private Integer productionToken;
 
     @Enumerated(EnumType.STRING)
-    private Crops cropName;
-
-    private String clientEmail;
+    private Crops crop;
 }

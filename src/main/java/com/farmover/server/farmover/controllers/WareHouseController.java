@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.farmover.server.farmover.entities.Warehouse;
+import com.farmover.server.farmover.payloads.CompanyWarehouseCardDto;
+import com.farmover.server.farmover.payloads.StorageBookingsDto;
 import com.farmover.server.farmover.payloads.WareHouseDto;
 import com.farmover.server.farmover.payloads.WarehouseCardDto;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
@@ -27,6 +29,7 @@ import com.farmover.server.farmover.services.impl.WareHouseServiceImpl;
 @CrossOrigin
 @RequestMapping("/warehouse")
 public class WareHouseController {
+
     @Autowired
     WareHouseServiceImpl wareHouseServiceImpl;
 
@@ -46,13 +49,11 @@ public class WareHouseController {
         return warehouse;
     }
 
-    // @SuppressWarnings("deprecation")
-    // @GetMapping("/getAllWareHouseByOwnerId")
-    // public ResponseEntity<WareHouseDto> getAllWareHouseByOwnerId(@RequestParam
-    // Integer ownerId) {
-    // wareHouseServiceImpl.getWarehouseByOwner(ownerId)
-    // return ResponseEntity<WareHouseDto>(,HttpStatus.OK);
-    // }
+    @GetMapping("/")
+    public ResponseEntity<WareHouseDto> getWarehouseByOwner(@RequestParam String email) {
+        WareHouseDto warehouse = wareHouseServiceImpl.getWarehouseByOwner(email);
+        return new ResponseEntity<WareHouseDto>(warehouse, HttpStatus.OK);
+    }
 
     @PostMapping("/updateWareHouse")
     public ResponseEntity<String> updateWareHouse(@RequestParam Integer id, @RequestBody Warehouse ware) {
@@ -70,6 +71,11 @@ public class WareHouseController {
     @GetMapping("/all")
     public ResponseEntity<List<WarehouseCardDto>> getWarehouses() {
         return new ResponseEntity<List<WarehouseCardDto>>(wareHouseServiceImpl.getWarehouses(), HttpStatus.OK);
+    }
+
+    @GetMapping("/bookings")
+    public ResponseEntity<List<StorageBookingsDto>> getBookings(@RequestParam String email) {
+        return new ResponseEntity<List<StorageBookingsDto>>(wareHouseServiceImpl.getBookings(email), HttpStatus.OK);
     }
 
 }

@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,6 +39,7 @@ public class User implements UserDetails {
 
     private String uname;
 
+    @Column(unique = true)
     private String email;
 
     private String password;
@@ -49,6 +51,8 @@ public class User implements UserDetails {
 
     private String address;
 
+    private String profileImage;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Transactions> transactions;
 
@@ -57,6 +61,9 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Services> services;
+
+    @OneToOne(mappedBy = "manager", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Company company;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

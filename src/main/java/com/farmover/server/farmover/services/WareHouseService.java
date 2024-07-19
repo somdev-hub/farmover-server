@@ -3,11 +3,10 @@ package com.farmover.server.farmover.services;
 import java.io.IOException;
 import java.util.List;
 
-import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
+import com.farmover.server.farmover.payloads.StorageBookingsDto;
 import com.farmover.server.farmover.payloads.WareHouseDto;
 import com.farmover.server.farmover.payloads.WarehouseCardDto;
-import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
 
 public interface WareHouseService {
@@ -20,9 +19,10 @@ public interface WareHouseService {
 
     void updateWareHouse(Warehouse wh, Integer id);
 
-    WareHouseDto getWarehouseByOwner(User user);
+    WareHouseDto getWarehouseByOwner(String email);
 
     void deleteWarehouse(Integer id);
 
+    List<StorageBookingsDto> getBookings(String email);
 
 }
