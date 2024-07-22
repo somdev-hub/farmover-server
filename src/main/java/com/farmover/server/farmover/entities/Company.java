@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -23,6 +24,7 @@ public class Company {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(unique = true)
     private String name;
 
     private String address;
@@ -42,5 +44,5 @@ public class Company {
     private User manager;
 
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<CompanyPurchases> companyPurchases;
+    private List<CompanyPurchases> companyPurchases = new ArrayList<>();
 }

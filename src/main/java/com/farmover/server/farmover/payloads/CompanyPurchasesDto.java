@@ -20,7 +20,7 @@ public class CompanyPurchasesDto {
 
     private String status;
 
-    // private Integer productionToken;
+    private String warehouseName;
 
     private Crops crop;
 }

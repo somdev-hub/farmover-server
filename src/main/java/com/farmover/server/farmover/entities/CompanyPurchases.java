@@ -34,7 +34,7 @@ public class CompanyPurchases {
 
     private String status;
 
-    // private Integer productionToken;
+    private String warehouseName;
 
     @Enumerated(EnumType.STRING)
     private Crops crop;

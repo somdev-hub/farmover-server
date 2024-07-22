@@ -23,4 +23,6 @@ public class FarmerItem {
     private String unit;
 
     private LocalDate bookedDate;
+
+    private Integer productionToken;
 }

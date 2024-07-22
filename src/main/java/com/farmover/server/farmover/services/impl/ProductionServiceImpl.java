@@ -323,7 +323,7 @@ public class ProductionServiceImpl implements ProductionService {
                 // Create and add transactions directly
                 Transactions userTransaction = createTransaction(booking, email, warehouse.getOwner().getEmail(), user,
                                 TransactionType.DEBIT);
-                Transactions warehouseTransaction = createTransaction(booking, email, warehouse.getOwner().getEmail(),
+                Transactions warehouseTransaction = createTransaction(booking, email, warehouse.getName(),
                                 warehouse.getOwner(), TransactionType.CREDIT);
 
                 user.getTransactions().add(userTransaction);
@@ -362,6 +362,7 @@ public class ProductionServiceImpl implements ProductionService {
                 StorageBookings booking = new StorageBookings();
                 booking.setStorage(storage);
                 booking.setBookedWeight(dto.getWeight());
+                booking.setAvailableQuantity(dto.getWeight());
                 booking.setClientEmail(email);
                 booking.setBookingDuration(dto.getDuration());
                 booking.setBookingDate(LocalDate.now());
@@ -375,12 +376,12 @@ public class ProductionServiceImpl implements ProductionService {
                 return booking;
         }
 
-        private Transactions createTransaction(StorageBookings booking, String buyerEmail, String sellerEmail,
+        private Transactions createTransaction(StorageBookings booking, String buyer, String seller,
                         User user, TransactionType type) {
                 Transactions transaction = new Transactions();
                 transaction.setAmount(booking.getBookedPrice());
-                transaction.setBuyer(buyerEmail);
-                transaction.setSeller(sellerEmail);
+                transaction.setBuyer(buyer);
+                transaction.setSeller(seller);
                 transaction.setItem("Storage Booking");
                 transaction.setDate(Date.valueOf(LocalDate.now()));
                 transaction.setType("storage");

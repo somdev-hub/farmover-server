@@ -40,6 +40,8 @@ public class StorageBookings {
 
     private String status;
 
+    private Double availableQuantity;
+
     private Integer productionToken;
 
     @Enumerated(EnumType.STRING)

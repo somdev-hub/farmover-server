@@ -1,6 +1,8 @@
 package com.farmover.server.farmover.services.impl;
 
 import java.io.IOException;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,23 +15,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.Company;
+import com.farmover.server.farmover.entities.CompanyPurchases;
 import com.farmover.server.farmover.entities.Crops;
+import com.farmover.server.farmover.entities.Production;
 import com.farmover.server.farmover.entities.Storage;
 import com.farmover.server.farmover.entities.StorageBookings;
 import com.farmover.server.farmover.entities.StorageType;
+import com.farmover.server.farmover.entities.TransactionType;
+import com.farmover.server.farmover.entities.Transactions;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.CompanyDto;
+import com.farmover.server.farmover.payloads.CompanyPurchasesDto;
 import com.farmover.server.farmover.payloads.CompanyWarehouseCardDto;
 import com.farmover.server.farmover.payloads.FarmerItem;
+import com.farmover.server.farmover.payloads.records.AvailableCropWarehouseCard;
+import com.farmover.server.farmover.payloads.records.CompanyCropCard;
 import com.farmover.server.farmover.payloads.records.RegisteredFarmersInfo;
 import com.farmover.server.farmover.payloads.request.CompanyRegisterDto;
 import com.farmover.server.farmover.repositories.CompanyRepo;
+import com.farmover.server.farmover.repositories.ProductionRepo;
+import com.farmover.server.farmover.repositories.StorageBookingsRepo;
 import com.farmover.server.farmover.repositories.StorageRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.CompanyServices;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class CompanyServiceImpl implements CompanyServices {
@@ -51,6 +64,12 @@ public class CompanyServiceImpl implements CompanyServices {
 
     @Autowired
     CompanyRepo companyRepo;
+
+    @Autowired
+    ProductionRepo productionRepo;
+
+    @Autowired
+    StorageBookingsRepo storageBookingsRepo;
 
     @Override
     public List<CompanyWarehouseCardDto> getWarehouseCardDtos() {
@@ -82,6 +101,10 @@ public class CompanyServiceImpl implements CompanyServices {
 
         for (Storage storage : warehouse.getStorages()) {
             for (StorageBookings storageBookings : storage.getStorageBookings()) {
+
+                if (storageBookings.getAvailableQuantity() <= 0) {
+                    continue;
+                }
                 StorageType storageType = storage.getStorageType();
                 Crops cropName = storageBookings.getCropName();
                 String clientEmail = storageBookings.getClientEmail();
@@ -102,7 +125,8 @@ public class CompanyServiceImpl implements CompanyServices {
                 farmerItem.setBookedDate(storageBookings.getBookingDate());
                 farmerItem.setUnit(storageBookings.getItemUnit());
                 farmerItem.setPrice(storageBookings.getItemPrice());
-                farmerItem.setWeight(storageBookings.getBookedWeight());
+                farmerItem.setWeight(storageBookings.getAvailableQuantity());
+                farmerItem.setProductionToken(storageBookings.getProductionToken());
 
                 farmerItems.add(farmerItem);
             }
@@ -152,6 +176,163 @@ public class CompanyServiceImpl implements CompanyServices {
         Company savedCompany = companyRepo.save(company);
 
         return modelMapper.map(savedCompany, CompanyDto.class);
+    }
+
+    @Override
+    @Transactional
+    public void purchaseItems(Map<Integer, Double> productionTokens, String email) {
+        User user = userRepo.findByEmail(email).orElseThrow(() -> {
+            throw new ResourceNotFoundException("User", "email", email);
+        });
+
+        Company company = companyRepo.findByManager(user).orElseThrow(() -> {
+            throw new ResourceNotFoundException("Company", "manager", user.getEmail());
+        });
+
+        List<CompanyPurchases> companyPurchases = company.getCompanyPurchases();
+
+        productionTokens.forEach((token, quantity) -> {
+            StorageBookings storageBooking = storageBookingsRepo.findStorageBookingsByProductionToken(token)
+                    .orElseThrow(() -> {
+                        throw new ResourceNotFoundException("StorageBookings", "production token", token.toString());
+                    });
+
+            CompanyPurchases purchase = new CompanyPurchases();
+            purchase.setCompany(company);
+            purchase.setCrop(storageBooking.getCropName());
+            purchase.setPurchaseDate(LocalDate.now());
+            purchase.setPurchaseQuantity(quantity);
+            purchase.setPurchasePrice(storageBooking.getItemPrice());
+            purchase.setPurchaseTotal(storageBooking.getItemPrice() * quantity);
+            purchase.setStatus("PURCHASED");
+            purchase.setWarehouseName(storageBooking.getStorage().getWarehouse().getName());
+
+            storageBooking.setStatus("SOLD");
+            storageBooking.setAvailableQuantity(storageBooking.getAvailableQuantity() - quantity);
+
+            storageBooking.getStorage().setAvailableCapacity(
+                    storageBooking.getStorage().getAvailableCapacity() + storageBooking.getBookedWeight());
+
+            Production production = productionRepo.findByToken(token).orElseThrow(
+                    () -> new ResourceNotFoundException("Production", "production token", token.toString()));
+
+            Transactions farmerTransaction = updateTransactions(production.getFarmer().getEmail(), company.getName(),
+                    Double.valueOf(storageBooking.getItemPrice() * quantity) * 0.95,
+                    storageBooking.getCropName().toString(),
+                    "Crop Purchase",
+                    TransactionType.CREDIT, production.getFarmer());
+
+            Transactions companyTransaction = updateTransactions(company.getName(), production.getFarmer().getEmail(),
+                    Double.valueOf(storageBooking.getItemPrice() * quantity), storageBooking.getCropName().toString(),
+                    "Crop Purchase",
+                    TransactionType.DEBIT, user);
+
+            Transactions warehouseTransaction = updateTransactions(storageBooking.getStorage().getWarehouse().getName(),
+                    company.getName(),
+                    Double.valueOf(storageBooking.getItemPrice() * quantity) * 0.05,
+                    storageBooking.getCropName().toString(),
+                    "Crop Purchase",
+                    TransactionType.CREDIT, storageBooking.getStorage().getWarehouse().getOwner());
+
+            user.getTransactions().add(companyTransaction);
+            production.getFarmer().getTransactions().add(farmerTransaction);
+            storageBooking.getStorage().getWarehouse().getOwner().getTransactions().add(warehouseTransaction);
+
+            companyPurchases.add(purchase);
+
+            userRepo.save(user);
+            productionRepo.save(production);
+            storageRepo.save(storageBooking.getStorage());
+            storageBookingsRepo.save(storageBooking);
+
+        });
+
+        companyRepo.save(company);
+
+    }
+
+    private Transactions updateTransactions(String buyer, String seller, Double amount, String item,
+            String type,
+            TransactionType transactionType, User user) {
+        System.out.println(amount);
+        Transactions transactions = new Transactions();
+        transactions.setAmount(amount);
+        transactions.setBuyer(buyer);
+        transactions.setSeller(seller);
+        transactions.setItem(item);
+        transactions.setDate(
+                Date.valueOf(LocalDate.now()));
+        transactions.setType(type);
+        transactions.setTransactionType(transactionType);
+        transactions.setUser(user);
+
+        return transactions;
+    }
+
+    @Override
+    public Map<Crops, List<AvailableCropWarehouseCard>> getWarehousesByAvailableCrops() {
+        List<Warehouse> warehouses = wareHouseRepo.findAll();
+        Map<Crops, List<AvailableCropWarehouseCard>> cropMap = new HashMap<>();
+
+        warehouses.forEach(warehouse -> {
+            warehouse.getStorages().forEach(storage -> {
+                storage.getStorageBookings().forEach(storageBookings -> {
+                    if (storageBookings.getAvailableQuantity() > 0) {
+                        Crops crop = storageBookings.getCropName();
+                        AvailableCropWarehouseCard card = new AvailableCropWarehouseCard(warehouse.getId(),
+                                warehouse.getName(), warehouse.getAddress(), warehouse.getWarehouseImage(), crop,
+                                warehouse.getOwner().getPhone(),
+                                storageBookings.getItemPrice());
+
+                        List<AvailableCropWarehouseCard> cards = cropMap.computeIfAbsent(crop, k -> new ArrayList<>());
+
+                        cards.add(card);
+
+                    }
+                });
+            });
+        });
+
+        return cropMap;
+    }
+
+    @Override
+    public List<CompanyPurchasesDto> getCompanyPurchases(String email) {
+        User user = userRepo.findByEmail(email).orElseThrow(() -> {
+            throw new ResourceNotFoundException("User", "email", email);
+        });
+
+        Company company = companyRepo.findByManager(user).orElseThrow(() -> {
+            throw new ResourceNotFoundException("Company", "manager", user.getEmail());
+        });
+
+        return company.getCompanyPurchases().stream().map(purchase -> {
+            CompanyPurchasesDto dto = modelMapper.map(purchase, CompanyPurchasesDto.class);
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<Crops, int[]> getCompanyCropCards(String email) {
+        User user = userRepo.findByEmail(email).orElseThrow(() -> {
+            throw new ResourceNotFoundException("User", "email", email);
+        });
+
+        Company company = companyRepo.findByManager(user).orElseThrow(() -> {
+            throw new ResourceNotFoundException("Company", "manager", user.getEmail());
+        });
+
+        Map<Crops, int[]> cropMap = new HashMap<>();
+
+        company.getCompanyPurchases().forEach(purchase -> {
+            Crops crop = purchase.getCrop();
+            int[] values = cropMap.computeIfAbsent(crop, k -> new int[2]);
+
+            values[0] += purchase.getPurchaseQuantity();
+            values[1] += purchase.getPurchaseTotal();
+        });
+
+        return cropMap;
     }
 
 }
