@@ -18,6 +18,7 @@ import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.StorageBookingsDto;
 import com.farmover.server.farmover.payloads.WareHouseDto;
 import com.farmover.server.farmover.payloads.WarehouseCardDto;
+import com.farmover.server.farmover.payloads.records.WarehouseSalesRecord;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
@@ -149,6 +150,9 @@ public class WareHouseServiceImpl implements WareHouseService {
         List<StorageBookingsDto> bookings = new ArrayList<>();
         wareHouseRepo.findByOwner(user).getStorages().forEach(storage -> {
             storage.getStorageBookings().forEach(booking -> {
+                if (booking.getStatus().equals("SOLD")) {
+                    return;
+                }
                 StorageBookingsDto bookingDto = modelMapper.map(booking, StorageBookingsDto.class);
                 bookingDto.setStorageType(storage.getStorageType());
                 bookingDto.setCrop(
@@ -162,6 +166,33 @@ public class WareHouseServiceImpl implements WareHouseService {
         });
 
         return bookings;
+    }
+
+    @Override
+    public List<WarehouseSalesRecord> getSalesOverview(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        List<WarehouseSalesRecord> salesRecords = new ArrayList<>();
+
+        Warehouse warehouse = wareHouseRepo.findByOwner(user);
+
+        warehouse.getWarehouseSales().forEach(sale -> {
+            WarehouseSalesRecord record = new WarehouseSalesRecord(
+                    sale.getBuyer(),
+                    sale.getDate(),
+                    sale.getCrop(),
+                    sale.getQuantity(),
+                    sale.getUnit(),
+                    sale.getPrice(),
+                    sale.getCommission()
+
+            );
+
+            salesRecords.add(record);
+        });
+
+        return salesRecords;
     }
 
 }

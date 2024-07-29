@@ -25,13 +25,13 @@ import com.farmover.server.farmover.entities.TransactionType;
 import com.farmover.server.farmover.entities.Transactions;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
+import com.farmover.server.farmover.entities.WarehouseSales;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.CompanyDto;
 import com.farmover.server.farmover.payloads.CompanyPurchasesDto;
 import com.farmover.server.farmover.payloads.CompanyWarehouseCardDto;
 import com.farmover.server.farmover.payloads.FarmerItem;
 import com.farmover.server.farmover.payloads.records.AvailableCropWarehouseCard;
-import com.farmover.server.farmover.payloads.records.CompanyCropCard;
 import com.farmover.server.farmover.payloads.records.RegisteredFarmersInfo;
 import com.farmover.server.farmover.payloads.request.CompanyRegisterDto;
 import com.farmover.server.farmover.repositories.CompanyRepo;
@@ -207,16 +207,33 @@ public class CompanyServiceImpl implements CompanyServices {
             purchase.setStatus("PURCHASED");
             purchase.setWarehouseName(storageBooking.getStorage().getWarehouse().getName());
 
+            Warehouse warehouse = storageBooking.getStorage().getWarehouse();
+            List<WarehouseSales> warehouseSales = warehouse.getWarehouseSales();
+
+            WarehouseSales sales = new WarehouseSales();
+            sales.setBuyer(company.getName());
+            sales.setCrop(storageBooking.getCropName());
+            sales.setPrice(storageBooking.getItemPrice() * quantity);
+            sales.setCommission(storageBooking.getItemPrice() * quantity * 0.05);
+            sales.setQuantity(quantity);
+            sales.setUnit(storageBooking.getItemUnit());
+            sales.setDate(new Date(System.currentTimeMillis()));
+            sales.setProductionToken(token);
+            sales.setStorageType(storageBooking.getStorage().getStorageType());
+            sales.setWarehouse(warehouse);
+
+            warehouseSales.add(sales);
+
             storageBooking.setStatus("SOLD");
             storageBooking.setAvailableQuantity(storageBooking.getAvailableQuantity() - quantity);
 
             storageBooking.getStorage().setAvailableCapacity(
-                    storageBooking.getStorage().getAvailableCapacity() + storageBooking.getBookedWeight());
+                    storageBooking.getStorage().getAvailableCapacity() + (storageBooking.getBookedWeight() / 1000.0));
 
             Production production = productionRepo.findByToken(token).orElseThrow(
                     () -> new ResourceNotFoundException("Production", "production token", token.toString()));
 
-            Transactions farmerTransaction = updateTransactions(production.getFarmer().getEmail(), company.getName(),
+            Transactions farmerTransaction = updateTransactions(company.getName(), production.getFarmer().getEmail(),
                     Double.valueOf(storageBooking.getItemPrice() * quantity) * 0.95,
                     storageBooking.getCropName().toString(),
                     "Crop Purchase",
@@ -227,8 +244,8 @@ public class CompanyServiceImpl implements CompanyServices {
                     "Crop Purchase",
                     TransactionType.DEBIT, user);
 
-            Transactions warehouseTransaction = updateTransactions(storageBooking.getStorage().getWarehouse().getName(),
-                    company.getName(),
+            Transactions warehouseTransaction = updateTransactions(
+                    company.getName(), storageBooking.getStorage().getWarehouse().getName(),
                     Double.valueOf(storageBooking.getItemPrice() * quantity) * 0.05,
                     storageBooking.getCropName().toString(),
                     "Crop Purchase",
@@ -243,6 +260,7 @@ public class CompanyServiceImpl implements CompanyServices {
             userRepo.save(user);
             productionRepo.save(production);
             storageRepo.save(storageBooking.getStorage());
+            wareHouseRepo.save(warehouse);
             storageBookingsRepo.save(storageBooking);
 
         });

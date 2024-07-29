@@ -1,6 +1,8 @@
 package com.farmover.server.farmover.services.impl;
 
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,12 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.Production;
+import com.farmover.server.farmover.entities.Storage;
 import com.farmover.server.farmover.entities.TransactionType;
 import com.farmover.server.farmover.entities.Transactions;
 import com.farmover.server.farmover.entities.User;
+import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
+import com.farmover.server.farmover.repositories.WareHouseRepo;
 
 @Service
 public class ChartServicesImpl {
@@ -24,6 +29,9 @@ public class ChartServicesImpl {
 
     @Autowired
     private ProductionRepo productionRepo;
+
+    @Autowired
+    private WareHouseRepo warehouseRepo;
 
     private final String[] MONTHS = { "January", "February", "March", "April", "May", "June", "July", "August",
             "September", "October", "November", "December" };
@@ -93,5 +101,67 @@ public class ChartServicesImpl {
         });
 
         return monthlyProductionTally;
+    }
+
+    public Map<String, Double> getWarehouseUsageChart(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Warehouse warehouse = warehouseRepo.findByOwner(user);
+
+        Map<String, Double> usageMap = new HashMap<>();
+
+        YearMonth currentMonth = YearMonth.now();
+
+        warehouse.getStorages().forEach(storage -> {
+            storage.getStorageBookings().forEach(booking -> {
+                if (booking.getBookingDate().getMonth().equals(currentMonth.getMonth())) {
+                    usageMap.merge(storage.getStorageType().toString(), booking.getBookedWeight(), Double::sum);
+                }
+            });
+        });
+
+        return usageMap;
+    }
+
+    public Map<String, Double> getWarehouseRevenueFromBookings(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Warehouse warehouse = warehouseRepo.findByOwner(user);
+
+        Map<String, Double> revenueMap = new HashMap<>();
+
+        YearMonth currentMonth = YearMonth.now();
+
+        warehouse.getStorages().forEach(storage -> {
+            storage.getStorageBookings().forEach(booking -> {
+                if (booking.getBookingDate().getMonth().equals(currentMonth.getMonth())) {
+                    revenueMap.merge(storage.getStorageType().toString(), booking.getBookedPrice(),
+                            Double::sum);
+                }
+            });
+        });
+
+        return revenueMap;
+    }
+
+    public Map<String, Double> getWarehouseRevenueFromSales(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Warehouse warehouse = warehouseRepo.findByOwner(user);
+
+        Map<String, Double> revenueMap = new HashMap<>();
+
+        YearMonth currentMonth = YearMonth.now();
+
+        warehouse.getWarehouseSales().forEach(sale -> {
+            if (sale.getDate().toLocalDate().getMonth().equals(currentMonth.getMonth())) {
+                revenueMap.merge(sale.getStorageType().toString(), sale.getPrice(), Double::sum);
+            }
+        });
+
+        return revenueMap;
     }
 }

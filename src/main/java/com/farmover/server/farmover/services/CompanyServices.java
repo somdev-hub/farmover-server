@@ -12,7 +12,6 @@ import com.farmover.server.farmover.payloads.CompanyPurchasesDto;
 import com.farmover.server.farmover.payloads.CompanyWarehouseCardDto;
 import com.farmover.server.farmover.payloads.FarmerItem;
 import com.farmover.server.farmover.payloads.records.AvailableCropWarehouseCard;
-import com.farmover.server.farmover.payloads.records.CompanyCropCard;
 import com.farmover.server.farmover.payloads.records.RegisteredFarmersInfo;
 import com.farmover.server.farmover.payloads.request.CompanyRegisterDto;
 

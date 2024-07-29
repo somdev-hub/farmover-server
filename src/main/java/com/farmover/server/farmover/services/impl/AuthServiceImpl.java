@@ -1,6 +1,7 @@
 package com.farmover.server.farmover.services.impl;
 
 import java.util.ArrayList;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Service;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.AuthenticationResponse;
-import com.farmover.server.farmover.payloads.UserDto;
 import com.farmover.server.farmover.payloads.request.LoginRequest;
 import com.farmover.server.farmover.payloads.request.UserRequestDto;
 import com.farmover.server.farmover.repositories.UserRepo;

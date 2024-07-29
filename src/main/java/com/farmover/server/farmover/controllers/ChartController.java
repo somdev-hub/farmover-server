@@ -37,4 +37,22 @@ public class ChartController {
     public ResponseEntity<Map<String, Long>> getProduction(@RequestParam String email) {
         return new ResponseEntity<Map<String, Long>>(chartServices.getMonthlyProductionTally(email), HttpStatus.OK);
     }
+
+    @GetMapping("/warehouse-usage")
+    public ResponseEntity<Map<String, Double>> getWarehouseUsage(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Double>>(chartServices.getWarehouseUsageChart(email), HttpStatus.OK);
+    }
+
+    @GetMapping("/warehouse-revenue/bookings")
+    public ResponseEntity<Map<String, Double>> getWarehouseRevenueFromBookings(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Double>>(chartServices.getWarehouseRevenueFromBookings(email),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/warehouse-revenue/sales")
+    public ResponseEntity<Map<String, Double>> getWarehouseRevenueFromSales(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Double>>(chartServices.getWarehouseRevenueFromSales(email),
+                HttpStatus.OK);
+    }
+
 }

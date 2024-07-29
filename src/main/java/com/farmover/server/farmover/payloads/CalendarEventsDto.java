@@ -2,9 +2,12 @@ package com.farmover.server.farmover.payloads;
 
 import java.time.LocalDate;
 
+import lombok.Data;
+
+@Data
 public class CalendarEventsDto {
 
-    public String title;
-    public LocalDate start;
-    public LocalDate end;
+    private String title;
+    private LocalDate start;
+    private LocalDate end;
 }

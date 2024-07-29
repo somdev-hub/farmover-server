@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
+import com.farmover.server.farmover.payloads.records.OrderOverview;
+import com.farmover.server.farmover.payloads.records.ProductionSalesDataRecord;
 import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
 import com.farmover.server.farmover.services.impl.ProductionServiceImpl;
@@ -89,6 +91,17 @@ public class ProductionController {
         productionService.addProductionToWarehouse(dto, email);
 
         return new ResponseEntity<String>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/sales-report")
+    public ResponseEntity<List<ProductionSalesDataRecord>> getProductionSales(@RequestParam String email) {
+        return new ResponseEntity<List<ProductionSalesDataRecord>>(productionService.getSalesData(email),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/overview")
+    public ResponseEntity<List<OrderOverview>> getOrderOverview(@RequestParam String email) {
+        return new ResponseEntity<List<OrderOverview>>(productionService.getOrderOverview(email), HttpStatus.OK);
     }
 
 }
