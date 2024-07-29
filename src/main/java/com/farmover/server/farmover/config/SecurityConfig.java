@@ -41,6 +41,8 @@ public class SecurityConfig {
                         req -> req
                                 .requestMatchers("/warehouse/**").hasAnyRole( "WAREHOUSE_MANAGER","ADMIN")
                                 .requestMatchers("/storage/**").hasAnyRole( "WAREHOUSE_MANAGER","ADMIN")
+                                .requestMatchers("/videos/**").hasAnyRole( "CREATOR","ADMIN")
+                                .requestMatchers("/articles/**").hasAnyRole( "CREATOR","ADMIN")
                                 .requestMatchers("/users/").hasRole("ADMIN")
                                 .requestMatchers("/login/**", "/register/**")
                                 .permitAll()

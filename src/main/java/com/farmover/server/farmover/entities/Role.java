@@ -5,5 +5,6 @@ public enum Role {
     WAREHOUSE_MANAGER,
     COMPANY,
     ADMIN,
-    SERVICE_PROVIDER
+    SERVICE_PROVIDER,
+    CREATOR
 }
