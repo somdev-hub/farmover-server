@@ -1,6 +1,5 @@
 package com.farmover.server.farmover.services.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,16 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.Storage;
-import com.farmover.server.farmover.entities.SuitableFor;
+import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
+import com.farmover.server.farmover.payloads.StorageCardDto;
 import com.farmover.server.farmover.payloads.StorageDto;
 import com.farmover.server.farmover.payloads.request.StorageRequestDto;
 import com.farmover.server.farmover.repositories.StorageRepo;
+import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.StorageService;
-
-import io.jsonwebtoken.lang.Arrays;
 
 @Service
 public class StorageServiceImpl implements StorageService {
@@ -32,6 +31,8 @@ public class StorageServiceImpl implements StorageService {
     S3ServiceImpl s3ServiceImpl;
     @Autowired
     SuitableForServiceImp sForServiceImp;
+    @Autowired
+    UserRepo userRepo;
 
     @Override
     public StorageDto geStorage(Integer id) {
@@ -40,23 +41,30 @@ public class StorageServiceImpl implements StorageService {
         });
 
         StorageDto dto = modelMapper.map(storage, StorageDto.class);
-        dto.setSuitableFor(sForServiceImp.getAllByStorage(id));
         return dto;
     }
 
     @Override
-    public void addStorage(Integer wareHouseId, StorageRequestDto requestDto) {
-        Warehouse ware = wareHouseRepo.findById(wareHouseId)
-                .orElseThrow(() -> new RuntimeException("WareHouse not found"));
+    public StorageDto addStorage(String email, StorageRequestDto requestDto) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Warehouse ware = wareHouseRepo.findByOwner(user);
+
         Storage storage = modelMapper.map(requestDto, Storage.class);
-        List<String> name = Arrays.asList(requestDto.getSuitableFor().split(","));
 
         storage.setWarehouse(ware);
 
+        storage.setAvailableCapacity(requestDto.getCapacity());
+
+        storage.setStorageBookings(new ArrayList<>());
+
         Storage stoid = storageRepo.save(storage);
-        for (String str : name) {
-            sForServiceImp.addToStorage(stoid.getId(), str);
-        }
+
+        StorageDto dto = modelMapper.map(stoid, StorageDto.class);
+
+        return dto;
+
     }
 
     @Override
@@ -77,20 +85,45 @@ public class StorageServiceImpl implements StorageService {
 
     }
 
-    @Override
-    public ArrayList<StorageDto> getAllStorageByWarehouse(Warehouse warehouse) {
-        ArrayList<Storage> storages = storageRepo.findByWarehouse(warehouse);
-        ArrayList<StorageDto> storageDtos = new ArrayList<StorageDto>();
-        for (Storage storage : storages) {
-            StorageDto dto = modelMapper.map(storage, StorageDto.class);
-            dto.setSuitableFor(sForServiceImp.getAllByStorage(storage.getId()));
-            storageDtos.add(dto);
-        }
-        return storageDtos;
-    }
-
     public void deleteStorage(Integer id) {
         storageRepo.deleteById(id);
+    }
+
+    @Override
+    public ArrayList<StorageDto> getAllStorageByOwner(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+        Warehouse warehouse = wareHouseRepo.findByOwner(user);
+        ArrayList<Storage> storages = storageRepo.findByWarehouse(warehouse);
+        ArrayList<StorageDto> dtos = new ArrayList<>();
+        for (Storage storage : storages) {
+            StorageDto dto = modelMapper.map(storage, StorageDto.class);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    @Override
+    public List<StorageCardDto> getStorageCards(String email) {
+
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Warehouse warehouse = wareHouseRepo.findByOwner(user);
+
+        List<Storage> storages = storageRepo.findByWarehouse(warehouse);
+
+        List<StorageCardDto> storageCardDtoList = storages.stream().map(storage -> {
+            StorageCardDto storageCardDto = new StorageCardDto();
+            storageCardDto.setAvailableCapacity(storage.getAvailableCapacity());
+            storageCardDto.setCapacity(storage.getCapacity());
+            storageCardDto.setStorageType(storage.getStorageType());
+            storageCardDto.setId(storage.getId());
+
+            return storageCardDto;
+        }).toList();
+
+        return storageCardDtoList;
     }
 
 }

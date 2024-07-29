@@ -18,17 +18,23 @@ import com.farmover.server.farmover.entities.CropActivity;
 import com.farmover.server.farmover.entities.Crops;
 import com.farmover.server.farmover.entities.Production;
 import com.farmover.server.farmover.entities.Services;
+import com.farmover.server.farmover.entities.Storage;
+import com.farmover.server.farmover.entities.StorageBookings;
 import com.farmover.server.farmover.entities.TransactionType;
 import com.farmover.server.farmover.entities.Transactions;
 import com.farmover.server.farmover.entities.User;
+import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
+import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
 import com.farmover.server.farmover.repositories.CropActivityRepo;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.ServicesRepo;
+import com.farmover.server.farmover.repositories.StorageRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
+import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.ProductionService;
 
 import jakarta.transaction.Transactional;
@@ -50,6 +56,12 @@ public class ProductionServiceImpl implements ProductionService {
 
         @Autowired
         private ServicesRepo servicesRepo;
+
+        @Autowired
+        private WareHouseRepo wareHouseRepo;
+
+        @Autowired
+        private StorageRepo storageRepo;
 
         @Override
         public ProductionDto addProduction(ProductionDto productionDto, String email) {
@@ -277,6 +289,103 @@ public class ProductionServiceImpl implements ProductionService {
                 transaction.setDate(transactionDate);
                 transaction.setType("service");
                 transaction.setTransactionType(transactionType);
+                transaction.setUser(user);
+                return transaction;
+        }
+
+        @Override
+        @Transactional
+        public void addProductionToWarehouse(AddProductionToWarehouseDto dto, String email) {
+                User user = userRepo.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+                Production production = productionRepo.findByToken(dto.getProductionToken()).orElseThrow(
+                                () -> new ResourceNotFoundException("Production", "token",
+                                                dto.getProductionToken().toString()));
+                Warehouse warehouse = wareHouseRepo.findById(dto.getWarehouseId())
+                                .orElseThrow(() -> new ResourceNotFoundException("WareHouse", "wareHouse id",
+                                                dto.getWarehouseId().toString()));
+
+                Storage storage = warehouse.getStorages().stream()
+                                .filter(s -> s.getStorageType().equals(dto.getStorageType()))
+                                .findFirst().orElseThrow(() -> new ResourceNotFoundException("Storage", "storage type",
+                                                dto.getStorageType().toString()));
+
+                if (storage.getAvailableCapacity() < (dto.getWeight() / 1000.0)) {
+                        throw new RuntimeException("Not enough capacity");
+                }
+
+                StorageBookings booking = createStorageBooking(dto, email, dto.getProductionToken(), storage);
+
+                // Update storage capacity directly
+                storage.setAvailableCapacity(storage.getAvailableCapacity() - (dto.getWeight() / 1000.0));
+                storage.getStorageBookings().add(booking);
+
+                // Create and add transactions directly
+                Transactions userTransaction = createTransaction(booking, email, warehouse.getOwner().getEmail(), user,
+                                TransactionType.DEBIT);
+                Transactions warehouseTransaction = createTransaction(booking, email, warehouse.getName(),
+                                warehouse.getOwner(), TransactionType.CREDIT);
+
+                user.getTransactions().add(userTransaction);
+                warehouse.getOwner().getTransactions().add(warehouseTransaction);
+
+                production.setStatus("stored");
+
+                // Update the end date of the latest CropActivity
+                production.getCropActivities().stream()
+                                .max(Comparator.comparing(CropActivity::getActivityNumber))
+                                .ifPresent(latestCropActivity -> {
+                                        latestCropActivity.setEndDate(LocalDate.now());
+                                        cropActivityRepo.save(latestCropActivity);
+                                });
+
+                // Create and add a new CropActivity for "Stored"
+                CropActivity newCropActivity = new CropActivity();
+                newCropActivity.setActivityTitle("Stored");
+                newCropActivity.setStartDate(LocalDate.now());
+                newCropActivity.setEndDate(LocalDate.now());
+                newCropActivity.setActivityNumber(production.getCropActivities().size() + 1);
+                newCropActivity.setProduction(production);
+
+                production.getCropActivities().add(newCropActivity);
+
+                // Batch save entities
+                userRepo.save(user);
+                userRepo.save(warehouse.getOwner());
+                storageRepo.save(storage);
+                production.setWarehouse(warehouse);
+                productionRepo.save(production);
+        }
+
+        private StorageBookings createStorageBooking(AddProductionToWarehouseDto dto, String email, Integer token,
+                        Storage storage) {
+                StorageBookings booking = new StorageBookings();
+                booking.setStorage(storage);
+                booking.setBookedWeight(dto.getWeight());
+                booking.setAvailableQuantity(dto.getWeight());
+                booking.setClientEmail(email);
+                booking.setBookingDuration(dto.getDuration());
+                booking.setBookingDate(LocalDate.now());
+                booking.setBookedPrice(dto.getWeight() * storage.getPricePerKg());
+                booking.setItemPrice(dto.getMinimumPrice());
+                booking.setItemUnit(dto.getMinimumUnit());
+                booking.setMarkForSale(dto.getMarkForSale());
+                booking.setProductionToken(token);
+                booking.setCropName(productionRepo.findByToken(token).get().getCrop());
+                booking.setStatus("booked");
+                return booking;
+        }
+
+        private Transactions createTransaction(StorageBookings booking, String buyer, String seller,
+                        User user, TransactionType type) {
+                Transactions transaction = new Transactions();
+                transaction.setAmount(booking.getBookedPrice());
+                transaction.setBuyer(buyer);
+                transaction.setSeller(seller);
+                transaction.setItem("Storage Booking");
+                transaction.setDate(Date.valueOf(LocalDate.now()));
+                transaction.setType("storage");
+                transaction.setTransactionType(type);
                 transaction.setUser(user);
                 return transaction;
         }
