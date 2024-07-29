@@ -46,9 +46,9 @@ public class AuthServiceImpl {
         user.setRole(userDto.getRole());
 
         user.setTransactions(new ArrayList<>());
-
+    
         User savedUser = userRepo.save(user);
-
+      
         String token = jwtService.generateToken(savedUser);
 
         return new AuthenticationResponse(token, savedUser.getEmail(), savedUser.getRole().name());

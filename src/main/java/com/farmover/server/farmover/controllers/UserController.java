@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.farmover.server.farmover.payloads.TransactionsDto;
 import com.farmover.server.farmover.payloads.UserDto;
 import com.farmover.server.farmover.services.UserService;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @CrossOrigin

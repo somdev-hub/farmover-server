@@ -92,7 +92,7 @@ public class WareHouseServiceImpl implements WareHouseService {
     }
 
     @Override
-    public void updateWareHouse(Warehouse wh, Integer id) {
+    public void updateWareHouse(Warehouse wh, Integer id){
         Warehouse warehouse = wareHouseRepo.findById(id).orElseThrow(() -> {
             throw new ResourceNotFoundException("WareHouse", "wareHouse id", id.toString());
         });
@@ -115,6 +115,8 @@ public class WareHouseServiceImpl implements WareHouseService {
 
         return warehouseDto;
     }
+
+    
 
     @Override
     public void deleteWarehouse(Integer id) {
