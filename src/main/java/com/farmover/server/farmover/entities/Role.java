@@ -6,5 +6,5 @@ public enum Role {
     COMPANY,
     ADMIN,
     SERVICE_PROVIDER,
-    CREATOR
+    CONTENT_CREATOR
 }

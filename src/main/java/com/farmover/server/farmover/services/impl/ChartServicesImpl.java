@@ -1,7 +1,6 @@
 package com.farmover.server.farmover.services.impl;
 
 import java.sql.Date;
-import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.Production;
-import com.farmover.server.farmover.entities.Storage;
 import com.farmover.server.farmover.entities.TransactionType;
 import com.farmover.server.farmover.entities.Transactions;
 import com.farmover.server.farmover.entities.User;

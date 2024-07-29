@@ -14,11 +14,14 @@ import lombok.Data;
 @Table(name = "UpVoteVideo")
 @Data
 public class UpVoteVideo {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @ManyToOne
     @JsonIgnoreProperties("upVoteVideo")
     private VideoDetail video;
-    private String uname;
+
+    private User user;
 }

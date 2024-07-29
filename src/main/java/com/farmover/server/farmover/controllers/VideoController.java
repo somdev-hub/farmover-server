@@ -18,10 +18,6 @@ import com.farmover.server.farmover.services.impl.VideoServiceImp;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
-
-
-
-
 @RestController
 @CrossOrigin
 @RequestMapping("/videos")
@@ -29,15 +25,15 @@ public class VideoController {
     @Autowired
     VideoServiceImp serviceImp;
 
-    @PostMapping("/addVideo")
-    public ResponseEntity<String> addVideo(@RequestParam String ownerEmail,@ModelAttribute VideoRequestDto dto) {
+    @PostMapping(value = "/addVideo", consumes = "multipart/form-data")
+    public ResponseEntity<String> addVideo(@RequestParam String ownerEmail, @ModelAttribute VideoRequestDto dto) {
         serviceImp.addVideo(ownerEmail, dto);
-        return new ResponseEntity<String>("",HttpStatus.OK);
+        return new ResponseEntity<String>("uploaded", HttpStatus.OK);
     }
 
     @GetMapping("/getVideo")
     public VideoDto getVideo(@RequestParam Integer id) {
-         return serviceImp.getVideoByid(id);
+        return serviceImp.getVideoByid(id);
     }
 
     @GetMapping("/getVideoByAuthor")
@@ -54,8 +50,5 @@ public class VideoController {
     public void deleteVideo(@RequestParam Integer id) {
         serviceImp.deleteVideo(id);
     }
-    
-    
-    
-    
+
 }

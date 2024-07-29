@@ -4,7 +4,10 @@ import lombok.Data;
 
 @Data
 public class CommentVideoRequest {
+
     String comment;
-    String uname;
-    int videoId;
+
+    String email;
+
+    Integer videoId;
 }

@@ -9,15 +9,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+
 @Entity
 @Table(name = "DownVoteArticle")
 @Data
 public class DownVoteArticle {
-     @Id
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @ManyToOne
     @JsonIgnoreProperties("downVoteArticle")
     private ArticleDetail article;
-    private String uname;
+
+    private User user;
 }
