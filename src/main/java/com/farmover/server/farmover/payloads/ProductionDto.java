@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.farmover.server.farmover.entities.Crops;
-import com.farmover.server.farmover.entities.Services;
-import com.farmover.server.farmover.entities.Warehouse;
 
 import lombok.Data;
 
@@ -24,9 +22,9 @@ public class ProductionDto {
 
     // private UserDto farmer;
 
-    private List<Services> services;
-
     private String status;
 
-    private Warehouse warehouse;
+    private String warehouseName;
+
+    private Integer warehouseId;
 }

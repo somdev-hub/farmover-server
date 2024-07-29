@@ -1,17 +1,16 @@
-package com.farmover.server.farmover.payloads;
+package com.farmover.server.farmover.payloads.request;
 
 import com.farmover.server.farmover.entities.Role;
 
 import lombok.Data;
 
 @Data
-public class UserDto {
+public class UserRequestDto {
     private Integer id;
     private String uname;
     private String email;
-    // private String password;
+    private String password;
     private Role role;
     private String phone;
     private String address;
-
 }

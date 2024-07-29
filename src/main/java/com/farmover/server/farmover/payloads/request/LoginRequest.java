@@ -1,4 +1,4 @@
-package com.farmover.server.farmover.entities;
+package com.farmover.server.farmover.payloads.request;
 
 
 import lombok.Data;

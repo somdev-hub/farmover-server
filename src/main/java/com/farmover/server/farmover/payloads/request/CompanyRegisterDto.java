@@ -5,22 +5,19 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.Data;
 
 @Data
-public class WarehouseRequestDto {
-
+public class CompanyRegisterDto {
     private String name;
 
+    private String companyDetails;
+    
     private String address;
-
+    
     private String pin;
-
-    private String warehouseDetails;
-
+    
     private String ownership;
-
-    private MultipartFile warehouseImage;
-
-    private MultipartFile warehouseBackground;
-
-    private String facilities;
+    
+    private String companyIndustry;
+    
+    private MultipartFile companyImage;
 
 }
