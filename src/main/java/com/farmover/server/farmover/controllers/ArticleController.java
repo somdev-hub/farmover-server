@@ -25,14 +25,14 @@ public class ArticleController {
     ArticleServiceImpl serviceImp;
 
     @PostMapping("/addArticle")
-    public ResponseEntity<String> addArticle(@RequestParam String ownerEmail,@ModelAttribute ArticleRequest dto) {
+    public ResponseEntity<String> addArticle(@RequestParam String ownerEmail, @ModelAttribute ArticleRequest dto) {
         serviceImp.addArticle(ownerEmail, dto);
-        return new ResponseEntity<String>("",HttpStatus.OK);
+        return new ResponseEntity<String>("", HttpStatus.OK);
     }
 
     @GetMapping("/getArticle")
     public ArticleDto getArticle(@RequestParam Integer id) {
-         return serviceImp.getArticleByid(id);
+        return serviceImp.getArticleByid(id);
     }
 
     @GetMapping("/getArticleByAuthor")

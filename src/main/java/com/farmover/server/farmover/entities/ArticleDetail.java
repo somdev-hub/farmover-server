@@ -21,28 +21,37 @@ import lombok.Data;
 @Table(name = "article")
 @Data
 public class ArticleDetail {
-     @Id
+    
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @ManyToOne
     @JsonIgnoreProperties("articleAuthored")
     private User author;
+
     private String title;
+
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String content;
+
     private String thumbnail;
+
     private String date;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UpVoteArticle> upVoteArticle;
+
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DownVoteArticle> downVoteArticle;
+
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentArticle> articleComment;
 
+    Integer upCount = 0;
 
-    int upCount =0;
-    int downCount =0;
-    int commnetCount =0;
+    Integer downCount = 0;
+
+    Integer commnetCount = 0;
 }

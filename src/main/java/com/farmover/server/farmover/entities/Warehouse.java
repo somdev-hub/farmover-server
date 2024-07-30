@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -55,5 +56,8 @@ public class Warehouse {
     @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnoreProperties("warehouse")
     private List<Storage> storages;
+
+    @OneToMany(mappedBy = "warehouse", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<WarehouseSales> warehouseSales = new ArrayList<>();
 
 }

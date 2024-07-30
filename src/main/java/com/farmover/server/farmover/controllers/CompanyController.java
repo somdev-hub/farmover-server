@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,11 +25,9 @@ import com.farmover.server.farmover.payloads.CompanyPurchasesDto;
 import com.farmover.server.farmover.payloads.CompanyWarehouseCardDto;
 import com.farmover.server.farmover.payloads.FarmerItem;
 import com.farmover.server.farmover.payloads.records.AvailableCropWarehouseCard;
-import com.farmover.server.farmover.payloads.records.CompanyCropCard;
 import com.farmover.server.farmover.payloads.records.RegisteredFarmersInfo;
 import com.farmover.server.farmover.payloads.request.CompanyRegisterDto;
 import com.farmover.server.farmover.services.impl.CompanyServiceImpl;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @CrossOrigin

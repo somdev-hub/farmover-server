@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,8 @@ import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
+import com.farmover.server.farmover.payloads.records.OrderOverview;
+import com.farmover.server.farmover.payloads.records.ProductionSalesDataRecord;
 import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
 import com.farmover.server.farmover.repositories.CropActivityRepo;
@@ -388,6 +391,80 @@ public class ProductionServiceImpl implements ProductionService {
                 transaction.setTransactionType(type);
                 transaction.setUser(user);
                 return transaction;
+        }
+
+        @Override
+        public List<ProductionSalesDataRecord> getSalesData(String email) {
+                User user = userRepo.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+                List<Transactions> transactions = user.getTransactions().stream()
+                                .filter(transaction -> transaction.getTransactionType().equals(TransactionType.CREDIT))
+                                .toList();
+
+                List<ProductionSalesDataRecord> productionSalesDataRecords = new ArrayList<>();
+
+                for (Transactions transaction : transactions) {
+                        // if (transaction.getType() == "Crop Purchase") {
+
+                        ProductionSalesDataRecord record = new ProductionSalesDataRecord(
+                                        transaction.getBuyer(),
+                                        transaction.getItem(),
+                                        transaction.getDate(),
+                                        transaction.getAmount());
+
+                        productionSalesDataRecords.add(record);
+                        // }
+                }
+
+                return productionSalesDataRecords;
+        }
+
+        @Override
+        public List<OrderOverview> getOrderOverview(String email) {
+                User user = userRepo.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+                List<Transactions> transactions = user.getTransactions().stream()
+
+                                .toList();
+
+                List<OrderOverview> orderOverviews = new ArrayList<>();
+
+                for (Transactions transaction : transactions) {
+
+                        OrderOverview orderOverview;
+                        if (transaction.getTransactionType().equals(TransactionType.CREDIT)) {
+
+                                orderOverview = new OrderOverview(
+                                                transaction.getAmount(),
+                                                transaction.getBuyer(),
+                                                transaction.getDate(),
+                                                transaction.getTransactionType().toString()
+
+                                );
+                        } else {
+
+                                orderOverview = new OrderOverview(
+                                                transaction.getAmount(),
+                                                transaction.getSeller(),
+                                                transaction.getDate(),
+                                                transaction.getTransactionType().toString()
+
+                                );
+                        }
+
+                        orderOverviews.add(orderOverview);
+                }
+
+                Collections.sort(orderOverviews, new Comparator<OrderOverview>() {
+                        @Override
+                        public int compare(OrderOverview o1, OrderOverview o2) {
+                                return o2.date().compareTo(o1.date());
+                        }
+                });
+
+                return orderOverviews;
         }
 
 }

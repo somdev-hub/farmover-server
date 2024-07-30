@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.entities;
 
+import java.sql.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -21,29 +22,42 @@ import lombok.Data;
 @Table(name = "video")
 @Data
 public class VideoDetail {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @ManyToOne
     @JsonIgnoreProperties("videosAuthored")
     private User author;
+
     private String title;
+
     private String url;
+
     private String thumbnail;
+
     @Lob
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String longDescription;
+
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UpVoteVideo> upVoteVideo;
+
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<DownVoteVideo> downVoteVideo;
+
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentVideo> videoComment;
 
+    Integer upCount = 0;
 
-    int upCount =0;
-    int downCount =0;
-    int commnetCount =0;
-    private String date;
+    Integer downCount = 0;
+
+    Integer commentCount = 0;
+
+    private Date date;
+
+    @Column(length = 5000)
     private String description;
 }

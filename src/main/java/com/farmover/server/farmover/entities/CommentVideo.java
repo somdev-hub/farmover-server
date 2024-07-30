@@ -1,5 +1,7 @@
 package com.farmover.server.farmover.entities;
 
+import java.sql.Date;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Entity;
@@ -14,13 +16,18 @@ import lombok.Data;
 @Table(name = "CommentVideo")
 @Data
 public class CommentVideo {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
     @ManyToOne
     @JsonIgnoreProperties("videoComment")
     private VideoDetail video;
-    private String uname;
+
+    private User user;
+
     private String comment;
-    private String date;
+
+    private Date date;
 }

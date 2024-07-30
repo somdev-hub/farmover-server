@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.farmover.server.farmover.entities.Warehouse;
-import com.farmover.server.farmover.payloads.CompanyWarehouseCardDto;
 import com.farmover.server.farmover.payloads.StorageBookingsDto;
 import com.farmover.server.farmover.payloads.WareHouseDto;
 import com.farmover.server.farmover.payloads.WarehouseCardDto;
+import com.farmover.server.farmover.payloads.records.WarehouseSalesRecord;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
 import com.farmover.server.farmover.services.impl.S3ServiceImpl;
 import com.farmover.server.farmover.services.impl.WareHouseServiceImpl;
@@ -76,6 +76,12 @@ public class WareHouseController {
     @GetMapping("/bookings")
     public ResponseEntity<List<StorageBookingsDto>> getBookings(@RequestParam String email) {
         return new ResponseEntity<List<StorageBookingsDto>>(wareHouseServiceImpl.getBookings(email), HttpStatus.OK);
+    }
+
+    @GetMapping("/overview")
+    public ResponseEntity<List<WarehouseSalesRecord>> getWarehouseSales(@RequestParam String email) {
+        return new ResponseEntity<List<WarehouseSalesRecord>>(wareHouseServiceImpl.getSalesOverview(email),
+                HttpStatus.OK);
     }
 
 }

@@ -2,7 +2,6 @@ package com.farmover.server.farmover.entities;
 
 import java.sql.Date;
 
-import jakarta.annotation.Nonnull;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,41 +10,37 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
 @Entity
-@Table(name = "transaction")
-@Getter
-@Setter
-@NoArgsConstructor
-public class Transactions {
+@Table(name = "warehouse_sales")
+@Data
+public class WarehouseSales {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Nonnull
-    private Double amount;
-
-    @Nonnull
     private String buyer;
 
-    @Nonnull
-    private String seller;
+    @Enumerated(EnumType.STRING)
+    private Crops crop;
 
-    private String item;
-
-    @Nonnull
     private Date date;
 
-    private String type;
+    private Double quantity;
+
+    private String unit;
+
+    private Double price;
+
+    private Double commission;
+
+    private Integer productionToken;
 
     @Enumerated(EnumType.STRING)
-    @Nonnull
-    private TransactionType transactionType;
+    private StorageType storageType;
 
     @ManyToOne
-    private User user;
+    private Warehouse warehouse;
 }

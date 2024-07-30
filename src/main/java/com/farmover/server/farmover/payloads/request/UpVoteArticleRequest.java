@@ -4,6 +4,8 @@ import lombok.Data;
 
 @Data
 public class UpVoteArticleRequest {
-    String uname;
+
+    String email;
+
     Integer articleId;
 }
