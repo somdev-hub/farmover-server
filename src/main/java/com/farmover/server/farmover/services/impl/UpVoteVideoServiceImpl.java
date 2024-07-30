@@ -36,16 +36,14 @@ public class UpVoteVideoServiceImpl implements UpVoteVideoService {
     public void upVote(UpVoteVideoRequest request) {
         VideoDetail videoDetail = videoRepo.findById(request.getVideoId())
                 .orElseThrow(() -> new RuntimeException("Video not found"));
+       
 
-        User user = userRepo.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
-
-        List<UpVoteVideo> ls = uRepo.findByVideoAndUser(videoDetail, user);
-        List<DownVoteVideo> lss = dRepo.findByVideoAndUser(videoDetail, user);
+        List<UpVoteVideo> ls = uRepo.findByVideoAndEmail(videoDetail,request.getEmail());
+        List<DownVoteVideo> lss = dRepo.findByVideoAndEmail(videoDetail, request.getEmail());
         if (ls.size() == 0) {
             UpVoteVideo vUpVoteVideo = new UpVoteVideo();
             vUpVoteVideo.setVideo(videoDetail);
-            vUpVoteVideo.setUser(user);
+            vUpVoteVideo.setEmail(request.getEmail());
             videoDetail.setUpCount(videoDetail.getUpCount() + 1);
             uRepo.save(vUpVoteVideo);
         }
@@ -61,10 +59,9 @@ public class UpVoteVideoServiceImpl implements UpVoteVideoService {
         VideoDetail videoDetail = videoRepo.findById(videoId)
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+       
 
-        List<UpVoteVideo> ls = uRepo.findByVideoAndUser(videoDetail, user);
+        List<UpVoteVideo> ls = uRepo.findByVideoAndEmail(videoDetail, email);
         if (ls.size() != 0) {
             videoDetail.setUpCount(videoDetail.getUpCount() - 1);
 

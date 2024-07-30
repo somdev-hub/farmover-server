@@ -22,6 +22,5 @@ public class DownVoteVideo {
     @ManyToOne
     @JsonIgnoreProperties("downVoteVideo")
     private VideoDetail video;
-
-    private User user;
+    private String email;
 }

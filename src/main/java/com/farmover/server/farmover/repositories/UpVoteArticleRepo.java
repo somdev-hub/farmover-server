@@ -10,5 +10,5 @@ import com.farmover.server.farmover.entities.User;
 
 public interface UpVoteArticleRepo extends JpaRepository<UpVoteArticle, Integer> {
 
-     List<UpVoteArticle> findByArticleAndUser(ArticleDetail article, User user);
+     List<UpVoteArticle> findByArticleAndEmail(ArticleDetail article, String email);
 }

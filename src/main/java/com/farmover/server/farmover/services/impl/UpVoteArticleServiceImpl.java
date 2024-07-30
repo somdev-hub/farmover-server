@@ -37,17 +37,16 @@ public class UpVoteArticleServiceImpl implements UpVoteArticleService {
         ArticleDetail articleDetail = articleRepo.findById(request.getArticleId())
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-        User user = userRepo.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
 
-        List<UpVoteArticle> ls = uRepo.findByArticleAndUser(articleDetail, user);
 
-        List<DownVoteArticle> lss = dRepo.findByArticleAndUser(articleDetail, user);
+        List<UpVoteArticle> ls = uRepo.findByArticleAndEmail(articleDetail, request.getEmail());
+
+        List<DownVoteArticle> lss = dRepo.findByArticleAndEmail(articleDetail, request.getEmail());
 
         if (ls.size() == 0) {
             UpVoteArticle aUpVoteArticle = new UpVoteArticle();
             aUpVoteArticle.setArticle(articleDetail);
-            aUpVoteArticle.setUser(user);
+            aUpVoteArticle.setEmail(request.getEmail());
             articleDetail.setUpCount(articleDetail.getUpCount() + 1);
             uRepo.save(aUpVoteArticle);
         }
@@ -63,10 +62,9 @@ public class UpVoteArticleServiceImpl implements UpVoteArticleService {
         ArticleDetail articleDetail = articleRepo.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+       
 
-        List<UpVoteArticle> ls = uRepo.findByArticleAndUser(articleDetail, user);
+        List<UpVoteArticle> ls = uRepo.findByArticleAndEmail(articleDetail, email);
         if (ls.size() != 0) {
             articleDetail.setUpCount(articleDetail.getUpCount() - 1);
 

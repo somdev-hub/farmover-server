@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class DownVoteArticleRequest {
-    String uname;
+    String email;
     Integer articleId;
 }

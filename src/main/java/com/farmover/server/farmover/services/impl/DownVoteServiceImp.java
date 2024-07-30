@@ -37,16 +37,13 @@ public class DownVoteServiceImp implements DownVoteVideoService {
         VideoDetail videoDetail = videoRepo.findById(request.getVideoId())
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-        User user = userRepo.findByEmail(request.getUname())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getUname()));
-
-        List<UpVoteVideo> ls = uRepo.findByVideoAndUser(videoDetail, user);
-        List<DownVoteVideo> lss = dRepo.findByVideoAndUser(videoDetail, user);
+        List<UpVoteVideo> ls = uRepo.findByVideoAndEmail(videoDetail, request.getEmail());
+        List<DownVoteVideo> lss = dRepo.findByVideoAndEmail(videoDetail, request.getEmail());
 
         if (lss.size() == 0) {
             DownVoteVideo downVoteVideo = new DownVoteVideo();
             downVoteVideo.setVideo(videoDetail);
-            downVoteVideo.setUser(user);
+            downVoteVideo.setEmail(request.getEmail());
             videoDetail.setDownCount(videoDetail.getDownCount() + 1);
             dRepo.save(downVoteVideo);
         }
@@ -62,10 +59,9 @@ public class DownVoteServiceImp implements DownVoteVideoService {
         VideoDetail videoDetail = videoRepo.findById(videoId)
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
-        List<DownVoteVideo> lss = dRepo.findByVideoAndUser(videoDetail, user);
+
+        List<DownVoteVideo> lss = dRepo.findByVideoAndEmail(videoDetail, email);
         if (lss.size() != 0) {
             dRepo.deleteById(lss.get(0).getId());
             videoDetail.setDownCount(videoDetail.getDownCount() - 1);
