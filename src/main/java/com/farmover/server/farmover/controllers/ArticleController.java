@@ -6,8 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,29 +26,29 @@ public class ArticleController {
     @Autowired
     ArticleServiceImpl serviceImp;
 
-    @PostMapping("/addArticle")
+    @PostMapping("/add-article")
     public ResponseEntity<String> addArticle(@RequestParam String ownerEmail, @ModelAttribute ArticleRequest dto) {
         serviceImp.addArticle(ownerEmail, dto);
         return new ResponseEntity<String>("", HttpStatus.OK);
     }
 
-    @GetMapping("/getArticle")
-    public ArticleDto getArticle(@RequestParam Integer id) {
+    @GetMapping("/{id}")
+    public ArticleDto getArticle(@PathVariable Integer id) {
         return serviceImp.getArticleByid(id);
     }
 
-    @GetMapping("/getArticleByAuthor")
+    @GetMapping("/get-by-email")
     public List<ArticleDto> getArticleByAuthor(@RequestParam String ownerEmail) {
         return serviceImp.getArticleByAuthor(ownerEmail);
     }
 
-    @GetMapping("/getArticleByTitle")
+    @GetMapping("/get-article-by-title")
     public List<ArticleDto> getArticleByTitle(@RequestParam String title) {
         return serviceImp.getArticleByTitle(title);
     }
 
-    @PostMapping("/deleteArticle")
-    public void deleteArticle(@RequestParam Integer id) {
+    @DeleteMapping("/{id}")
+    public void deleteArticle(@PathVariable Integer id) {
         serviceImp.deleteArticle(id);
     }
 }

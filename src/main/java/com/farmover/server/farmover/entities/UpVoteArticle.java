@@ -24,5 +24,5 @@ public class UpVoteArticle {
     @JsonIgnoreProperties("upVoteArticle")
     private ArticleDetail article;
 
-    private User user;
+    private String email;
 }

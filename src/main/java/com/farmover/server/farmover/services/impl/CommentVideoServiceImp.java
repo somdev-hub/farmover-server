@@ -52,7 +52,7 @@ public class CommentVideoServiceImp implements CommentVideoService {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
-        List<CommentVideo> comments = repo.findByUser(user);
+        List<CommentVideo> comments = repo.findByEmail(email);
 
         List<CommentVideoDto> dtos = comments.stream().map(comment -> {
             CommentVideoDto dto = modelMapper.map(comment, CommentVideoDto.class);
@@ -73,14 +73,13 @@ public class CommentVideoServiceImp implements CommentVideoService {
 
     @Override
     public void addComment(CommentVideoRequest request) {
-        User user = userRepo.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
+       
 
         VideoDetail vDetail = videoRepo.findById(request.getVideoId())
                 .orElseThrow(() -> new RuntimeException("Video not found"));
         CommentVideo comment = new CommentVideo();
         comment.setComment(request.getComment());
-        comment.setUser(user);
+        comment.setEmail(request.getEmail());
         comment.setVideo(vDetail);
 
         comment.setDate(new Date(System.currentTimeMillis()));

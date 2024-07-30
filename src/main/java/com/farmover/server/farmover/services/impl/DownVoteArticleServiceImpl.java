@@ -40,15 +40,13 @@ public class DownVoteArticleServiceImpl implements DownVoteArticleService {
         ArticleDetail articleDetail = articleRepo.findById(request.getArticleId())
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-        User user = userRepo.findByEmail(request.getUname())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getUname()));
-
-        List<UpVoteArticle> ls = uRepo.findByArticleAndUser(articleDetail, user);
-        List<DownVoteArticle> lss = dRepo.findByArticleAndUser(articleDetail, user);
+       
+        List<UpVoteArticle> ls = uRepo.findByArticleAndEmail(articleDetail, request.getEmail());
+        List<DownVoteArticle> lss = dRepo.findByArticleAndEmail(articleDetail, request.getEmail());
         if (lss.size() == 0) {
             DownVoteArticle downVoteArticle = new DownVoteArticle();
             downVoteArticle.setArticle(articleDetail);
-            downVoteArticle.setUser(user);
+            downVoteArticle.setEmail(request.getEmail());
             articleDetail.setDownCount(articleDetail.getDownCount() + 1);
             dRepo.save(downVoteArticle);
         }
@@ -64,10 +62,8 @@ public class DownVoteArticleServiceImpl implements DownVoteArticleService {
         ArticleDetail articleDetail = articleRepo.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
-
-        List<DownVoteArticle> lss = dRepo.findByArticleAndUser(articleDetail, user);
+       
+        List<DownVoteArticle> lss = dRepo.findByArticleAndEmail(articleDetail, email);
         if (lss.size() != 0) {
             dRepo.deleteById(lss.get(0).getId());
             articleDetail.setDownCount(articleDetail.getDownCount() - 1);

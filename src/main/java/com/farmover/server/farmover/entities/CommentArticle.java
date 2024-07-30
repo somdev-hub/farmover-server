@@ -25,9 +25,8 @@ public class CommentArticle {
     @JsonIgnoreProperties("articleComment")
     private ArticleDetail article;
 
-    private User user;
+    private String email;
 
     private String comment;
-
     private Date date;
 }
