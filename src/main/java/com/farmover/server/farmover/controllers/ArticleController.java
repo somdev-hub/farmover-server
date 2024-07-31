@@ -18,18 +18,22 @@ import org.springframework.web.bind.annotation.RestController;
 import com.farmover.server.farmover.payloads.ArticleDto;
 import com.farmover.server.farmover.payloads.request.ArticleRequest;
 import com.farmover.server.farmover.services.impl.ArticleServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 @RestController
 @CrossOrigin
 @RequestMapping("/articles")
 public class ArticleController {
+
     @Autowired
     ArticleServiceImpl serviceImp;
 
-    @PostMapping("/add-article")
-    public ResponseEntity<String> addArticle(@RequestParam String ownerEmail, @ModelAttribute ArticleRequest dto) {
+    @PostMapping("/")
+    public ResponseEntity<String> addArticle(@RequestParam String ownerEmail, @ModelAttribute ArticleRequest dto)
+            throws JsonMappingException, JsonProcessingException {
         serviceImp.addArticle(ownerEmail, dto);
-        return new ResponseEntity<String>("", HttpStatus.OK);
+        return new ResponseEntity<String>("", HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -42,7 +46,7 @@ public class ArticleController {
         return serviceImp.getArticleByAuthor(ownerEmail);
     }
 
-    @GetMapping("/get-article-by-title")
+    @GetMapping("/get-by-title")
     public List<ArticleDto> getArticleByTitle(@RequestParam String title) {
         return serviceImp.getArticleByTitle(title);
     }

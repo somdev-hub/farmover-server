@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.entities;
 
+import java.sql.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -21,7 +22,7 @@ import lombok.Data;
 @Table(name = "article")
 @Data
 public class ArticleDetail {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -32,13 +33,18 @@ public class ArticleDetail {
 
     private String title;
 
+    @Column(length = 500)
+    private List<String> tags;
+
+    private String subHeading;
+
     @Lob
     @Column(columnDefinition = "TEXT")
     private String content;
 
     private String thumbnail;
 
-    private String date;
+    private Date date;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<UpVoteArticle> upVoteArticle;
@@ -49,9 +55,9 @@ public class ArticleDetail {
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentArticle> articleComment;
 
-    Integer upCount = 0;
+    private Integer upCount = 0;
 
-    Integer downCount = 0;
+    private Integer downCount = 0;
 
-    Integer commnetCount = 0;
+    private Integer commnetCount = 0;
 }

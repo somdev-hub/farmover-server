@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.farmover.server.farmover.payloads.VideoDto;
 import com.farmover.server.farmover.payloads.request.VideoRequestDto;
 import com.farmover.server.farmover.services.impl.VideoServiceImp;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,13 +26,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 @CrossOrigin
 @RequestMapping("/videos")
 public class VideoController {
+
     @Autowired
     VideoServiceImp serviceImp;
 
-    @PostMapping(value = "/add-video", consumes = "multipart/form-data")
-    public ResponseEntity<String> addVideo(@RequestParam String ownerEmail, @ModelAttribute VideoRequestDto dto) {
+    @PostMapping(value = "/", consumes = "multipart/form-data")
+    public ResponseEntity<String> addVideo(@RequestParam String ownerEmail, @ModelAttribute VideoRequestDto dto)
+            throws JsonMappingException, JsonProcessingException {
         serviceImp.addVideo(ownerEmail, dto);
-        return new ResponseEntity<String>("uploaded", HttpStatus.OK);
+        return new ResponseEntity<String>("uploaded", HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -43,7 +47,7 @@ public class VideoController {
         return serviceImp.getVideoByAuthor(ownerEmail);
     }
 
-    @GetMapping("/get-video-by-title")
+    @GetMapping("/get-by-title")
     public List<VideoDto> getVideoByTitle(@RequestParam String title) {
         return serviceImp.getVideoByTitle(title);
     }

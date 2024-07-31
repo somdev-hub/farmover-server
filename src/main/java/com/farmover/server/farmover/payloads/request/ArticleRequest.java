@@ -6,10 +6,14 @@ import lombok.Data;
 
 @Data
 public class ArticleRequest {
-    
+
     String title;
-    
+
+    String tags;
+
+    String subHeading;
+
     MultipartFile thumbnail;
-    
+
     String content;
 }

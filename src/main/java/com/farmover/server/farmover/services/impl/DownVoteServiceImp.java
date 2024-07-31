@@ -7,9 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.DownVoteVideo;
 import com.farmover.server.farmover.entities.UpVoteVideo;
-import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.VideoDetail;
-import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.request.DownVoteRequest;
 import com.farmover.server.farmover.repositories.DownVoteVideoRepo;
 import com.farmover.server.farmover.repositories.UpVoteVideoRepo;

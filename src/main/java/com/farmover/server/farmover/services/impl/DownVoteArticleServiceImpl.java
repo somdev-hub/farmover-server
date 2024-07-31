@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import com.farmover.server.farmover.entities.ArticleDetail;
 import com.farmover.server.farmover.entities.DownVoteArticle;
 import com.farmover.server.farmover.entities.UpVoteArticle;
-import com.farmover.server.farmover.entities.User;
-import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.request.DownVoteArticleRequest;
 import com.farmover.server.farmover.repositories.ArticleRepo;
 import com.farmover.server.farmover.repositories.DownVoteArticleRepo;

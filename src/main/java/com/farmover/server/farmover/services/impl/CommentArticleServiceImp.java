@@ -1,7 +1,6 @@
 package com.farmover.server.farmover.services.impl;
 
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -10,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.ArticleDetail;
 import com.farmover.server.farmover.entities.CommentArticle;
-import com.farmover.server.farmover.entities.User;
-import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.CommentArticleDto;
 import com.farmover.server.farmover.payloads.request.CommentArticleRequest;
 import com.farmover.server.farmover.repositories.ArticleRepo;
@@ -42,8 +39,6 @@ public class CommentArticleServiceImp implements CommentArticleService {
         ArticleDetail aDetail = articleRepo.findById(request.getArticleId())
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-       
-
         CommentArticle comment = new CommentArticle();
         comment.setComment(request.getComment());
         comment.setEmail(request.getEmail());
@@ -60,23 +55,21 @@ public class CommentArticleServiceImp implements CommentArticleService {
         ArticleDetail aDetail = articleRepo.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Video not found"));
         List<CommentArticle> comments = repo.findByArticle(aDetail);
-        List<CommentArticleDto> dtos = new ArrayList<>();
-        for (CommentArticle comment : comments) {
+        List<CommentArticleDto> dtos = comments.stream().map(comment -> {
             CommentArticleDto dto = modelMapper.map(comment, CommentArticleDto.class);
-            dtos.add(dto);
-        }
+            return dto;
+        }).toList();
         return dtos;
     }
 
     @Override
     public List<CommentArticleDto> getAllCommentByUser(String email) {
-       
+
         List<CommentArticle> comments = repo.findByEmail(email);
-        List<CommentArticleDto> dtos = new ArrayList<>();
-        for (CommentArticle comment : comments) {
+        List<CommentArticleDto> dtos = comments.stream().map(comment -> {
             CommentArticleDto dto = modelMapper.map(comment, CommentArticleDto.class);
-            dtos.add(dto);
-        }
+            return dto;
+        }).toList();
         return dtos;
     }
 

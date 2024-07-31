@@ -1,7 +1,6 @@
 package com.farmover.server.farmover.services.impl;
 
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
@@ -9,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.CommentVideo;
-import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.VideoDetail;
-import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.CommentVideoDto;
 import com.farmover.server.farmover.payloads.request.CommentVideoRequest;
 import com.farmover.server.farmover.repositories.CommentVideoRepo;
@@ -38,19 +35,15 @@ public class CommentVideoServiceImp implements CommentVideoService {
     public List<CommentVideoDto> getAllComment(Integer videoId) {
         VideoDetail vDetail = videoRepo.findById(videoId).orElseThrow(() -> new RuntimeException("Video not found"));
         List<CommentVideo> comments = repo.findByVideo(vDetail);
-        List<CommentVideoDto> dtos = new ArrayList<>();
-        for (CommentVideo comment : comments) {
+        List<CommentVideoDto> dtos = comments.stream().map(comment -> {
             CommentVideoDto dto = modelMapper.map(comment, CommentVideoDto.class);
-            dtos.add(dto);
-        }
+            return dto;
+        }).toList();
         return dtos;
     }
 
     @Override
     public List<CommentVideoDto> getAllCommentByUser(String email) {
-
-        User user = userRepo.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
         List<CommentVideo> comments = repo.findByEmail(email);
 
@@ -73,7 +66,6 @@ public class CommentVideoServiceImp implements CommentVideoService {
 
     @Override
     public void addComment(CommentVideoRequest request) {
-       
 
         VideoDetail vDetail = videoRepo.findById(request.getVideoId())
                 .orElseThrow(() -> new RuntimeException("Video not found"));

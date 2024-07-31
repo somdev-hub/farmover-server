@@ -13,6 +13,8 @@ public class VideoRequestDto {
 
     String title;
 
+    String tags;
+
     MultipartFile thumbnail;
 
     String longDescription;

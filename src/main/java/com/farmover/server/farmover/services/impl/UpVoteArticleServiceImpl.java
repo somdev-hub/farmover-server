@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import com.farmover.server.farmover.entities.ArticleDetail;
 import com.farmover.server.farmover.entities.DownVoteArticle;
 import com.farmover.server.farmover.entities.UpVoteArticle;
-import com.farmover.server.farmover.entities.User;
-import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.request.UpVoteArticleRequest;
 import com.farmover.server.farmover.repositories.ArticleRepo;
 import com.farmover.server.farmover.repositories.DownVoteArticleRepo;
@@ -37,8 +35,6 @@ public class UpVoteArticleServiceImpl implements UpVoteArticleService {
         ArticleDetail articleDetail = articleRepo.findById(request.getArticleId())
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-
-
         List<UpVoteArticle> ls = uRepo.findByArticleAndEmail(articleDetail, request.getEmail());
 
         List<DownVoteArticle> lss = dRepo.findByArticleAndEmail(articleDetail, request.getEmail());
@@ -61,8 +57,6 @@ public class UpVoteArticleServiceImpl implements UpVoteArticleService {
     public void deleteUpVote(String email, Integer articleId) {
         ArticleDetail articleDetail = articleRepo.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Video not found"));
-
-       
 
         List<UpVoteArticle> ls = uRepo.findByArticleAndEmail(articleDetail, email);
         if (ls.size() != 0) {

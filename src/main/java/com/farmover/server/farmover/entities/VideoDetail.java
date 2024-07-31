@@ -35,6 +35,9 @@ public class VideoDetail {
 
     private String url;
 
+    @Column(length = 500)
+    private List<String> tags;
+
     private String thumbnail;
 
     @Lob
@@ -50,11 +53,11 @@ public class VideoDetail {
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentVideo> videoComment;
 
-    Integer upCount = 0;
+    private Integer upCount = 0;
 
-    Integer downCount = 0;
+    private Integer downCount = 0;
 
-    Integer commentCount = 0;
+    private Integer commentCount = 0;
 
     private Date date;
 

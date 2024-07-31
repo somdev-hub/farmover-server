@@ -16,6 +16,9 @@ import com.farmover.server.farmover.payloads.request.VideoRequestDto;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.repositories.VideoRepo;
 import com.farmover.server.farmover.services.VideoService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -37,7 +40,7 @@ public class VideoServiceImp implements VideoService {
     ObjectMapper objectMapper;
 
     @Override
-    public void addVideo(String userEmail, VideoRequestDto video) {
+    public void addVideo(String userEmail, VideoRequestDto video) throws JsonMappingException, JsonProcessingException {
         User owner = userRepo.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -61,8 +64,16 @@ public class VideoServiceImp implements VideoService {
         videoDetail.setThumbnail(thumbnail);
         videoDetail.setLongDescription(video.getLongDescription());
 
+        List<String> tags = objectMapper.readValue(video.getTags(), new TypeReference<List<String>>() {
+        });
+        videoDetail.setTags(tags);
+
+        videoDetail.setUpVoteVideo(new ArrayList<>());
+        videoDetail.setDownVoteVideo(new ArrayList<>());
+        videoDetail.setVideoComment(new ArrayList<>());
+
         videoDetail.setDate(new Date(System.currentTimeMillis()));
-        
+
         videoRepo.save(videoDetail);
     }
 

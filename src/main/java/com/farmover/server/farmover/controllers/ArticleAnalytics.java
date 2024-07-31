@@ -3,6 +3,7 @@ package com.farmover.server.farmover.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,49 +25,60 @@ import com.farmover.server.farmover.services.impl.UpVoteArticleServiceImpl;
 @CrossOrigin
 @RequestMapping("/article-analytics")
 public class ArticleAnalytics {
+
     @Autowired
     UpVoteArticleServiceImpl vUpVoteVideoServiceImpl;
+
     @Autowired
     DownVoteArticleServiceImpl downVoteServiceImp;
+
     @Autowired
     CommentArticleServiceImp commentVideoServiceImp;
 
     @PostMapping("/up-vote")
-    public String upVote(@RequestBody UpVoteArticleRequest entity) {
+    public ResponseEntity<String> upVote(@RequestBody UpVoteArticleRequest entity) {
         vUpVoteVideoServiceImpl.upVote(entity);
-        
-        return "done";
+
+        return ResponseEntity.ok("done");
     }
+
     @PostMapping("/down-vote")
-    public String downVote(@RequestBody DownVoteArticleRequest entity) {
+    public ResponseEntity<String> downVote(@RequestBody DownVoteArticleRequest entity) {
         downVoteServiceImp.downVote(entity);
-        return "done";
+
+        return ResponseEntity.ok("done");
     }
+
     @DeleteMapping("/delete-up-vote")
-    public String deleteUpVote(@RequestParam int articleId,@RequestParam String email) {
-        vUpVoteVideoServiceImpl.deleteUpVote(email,articleId);
-        
-        return "done";
+    public ResponseEntity<String> deleteUpVote(@RequestParam int articleId, @RequestParam String email) {
+        vUpVoteVideoServiceImpl.deleteUpVote(email, articleId);
+
+        return ResponseEntity.ok("done");
     }
+
     @DeleteMapping("/delete-down-vote")
-    public String deleteDownVote(@RequestParam int articleId,@RequestParam String email) {
-        downVoteServiceImp.deleteDownVote(email,articleId);
-        return "done";
+    public ResponseEntity<String> deleteDownVote(@RequestParam int articleId, @RequestParam String email) {
+        downVoteServiceImp.deleteDownVote(email, articleId);
+        return ResponseEntity.ok("done");
     }
+
     @PostMapping("/add-comment")
-    public String addComment(@RequestBody CommentArticleRequest entity) {
+    public ResponseEntity<String> addComment(@RequestBody CommentArticleRequest entity) {
         commentVideoServiceImp.addComment(entity);
-        return "done";
+        return ResponseEntity.ok("done");
     }
+
     @DeleteMapping("/delete-comment")
-    public String deleteComment(@RequestParam int id) {
+    public ResponseEntity<String> deleteComment(@RequestParam int id) {
         commentVideoServiceImp.deleteComment(id);
-        return "done";
+        return ResponseEntity.ok("done");
     }
+
     @GetMapping("/get-all-comment")
     public List<CommentArticleDto> getAllComment(@RequestParam int articleId) {
         return commentVideoServiceImp.getAllComment(articleId);
     }
+
     @GetMapping("/get-all-comment-by-user")
     public List<CommentArticleDto> getAllCommentByUser(@RequestParam String email) {
         return commentVideoServiceImp.getAllCommentByUser(email);
