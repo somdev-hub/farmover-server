@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CommentVideoDto {
-    private String uname;
+    private String email;
     private String comment;
     private String date;
 }

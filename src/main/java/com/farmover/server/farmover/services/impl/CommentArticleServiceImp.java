@@ -42,12 +42,11 @@ public class CommentArticleServiceImp implements CommentArticleService {
         ArticleDetail aDetail = articleRepo.findById(request.getArticleId())
                 .orElseThrow(() -> new RuntimeException("Video not found"));
 
-        User user = userRepo.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
+       
 
         CommentArticle comment = new CommentArticle();
         comment.setComment(request.getComment());
-        comment.setUser(user);
+        comment.setEmail(request.getEmail());
         comment.setArticle(aDetail);
 
         comment.setDate(new Date(System.currentTimeMillis()));
@@ -70,9 +69,9 @@ public class CommentArticleServiceImp implements CommentArticleService {
     }
 
     @Override
-    public List<CommentArticleDto> getAllCommentByUser(String uname) {
-
-        List<CommentArticle> comments = repo.findByUname(uname);
+    public List<CommentArticleDto> getAllCommentByUser(String email) {
+       
+        List<CommentArticle> comments = repo.findByEmail(email);
         List<CommentArticleDto> dtos = new ArrayList<>();
         for (CommentArticle comment : comments) {
             CommentArticleDto dto = modelMapper.map(comment, CommentArticleDto.class);

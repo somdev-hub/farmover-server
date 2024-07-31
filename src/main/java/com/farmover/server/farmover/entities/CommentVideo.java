@@ -25,7 +25,7 @@ public class CommentVideo {
     @JsonIgnoreProperties("videoComment")
     private VideoDetail video;
 
-    private User user;
+    private String email;
 
     private String comment;
 

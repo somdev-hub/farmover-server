@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class DownVoteRequest {
-    String uname;
+    String email;
     Integer videoId;
 }

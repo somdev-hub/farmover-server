@@ -6,9 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.farmover.server.farmover.entities.ArticleDetail;
 import com.farmover.server.farmover.entities.CommentArticle;
+import com.farmover.server.farmover.entities.User;
 
 
 public interface CommentArticleRepo extends JpaRepository<CommentArticle,Integer>{
-    List<CommentArticle> findByUname(String uname);
+    List<CommentArticle> findByEmail(String email);
     List<CommentArticle> findByArticle(ArticleDetail article);
 }
