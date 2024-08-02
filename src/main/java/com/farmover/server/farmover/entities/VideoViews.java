@@ -1,9 +1,5 @@
 package com.farmover.server.farmover.entities;
 
-import java.sql.Date;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,21 +9,16 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "CommentArticle")
+@Table(name = "video_views")
 @Data
-public class CommentArticle {
+public class VideoViews {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne
-    @JsonIgnoreProperties("articleComment")
-    private ArticleDetail article;
+    private VideoDetail video;
 
-    private String email;
-
-    private String comment;
-    
-    private Date date;
+    private String viewerEmail;
 }

@@ -12,7 +12,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -38,8 +37,6 @@ public class ArticleDetail {
 
     private String subHeading;
 
-    @Lob
-    @Column(columnDefinition = "TEXT")
     private String content;
 
     private String thumbnail;
@@ -55,9 +52,14 @@ public class ArticleDetail {
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentArticle> articleComment;
 
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ArticleViews> articleViews;
+
     private Integer upCount = 0;
 
     private Integer downCount = 0;
 
-    private Integer commnetCount = 0;
+    private Integer commentCount = 0;
+
+    private Integer viewCount = 0;
 }

@@ -8,6 +8,4 @@ public class CommentArticleRequest {
     String comment;
 
     String email;
-
-    Integer articleId;
 }

@@ -39,10 +39,9 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(
                         req -> req
-                                .requestMatchers("/warehouse/**").hasAnyRole( "WAREHOUSE_MANAGER","ADMIN")
-                                .requestMatchers("/storage/**").hasAnyRole( "WAREHOUSE_MANAGER","ADMIN")
-                                .requestMatchers("/videos/**").hasAnyRole( "CONTENT_CREATOR","ADMIN")
-                                .requestMatchers("/articles/**").hasAnyRole( "CONTENT_CREATOR","ADMIN")
+                                .requestMatchers("/warehouse/**").hasAnyRole("WAREHOUSE_MANAGER", "ADMIN")
+                                .requestMatchers("/storage/**").hasAnyRole("WAREHOUSE_MANAGER", "ADMIN")
+
                                 .requestMatchers("/users/").hasRole("ADMIN")
                                 .requestMatchers("/login/**", "/register/**")
                                 .permitAll()

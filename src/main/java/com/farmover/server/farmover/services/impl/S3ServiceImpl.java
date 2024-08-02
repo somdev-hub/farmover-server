@@ -3,7 +3,10 @@ package com.farmover.server.farmover.services.impl;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,12 +21,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 public class S3ServiceImpl {
 
     private String bucketName = "farmover-main";
-
-    // private String accessKey = "CF93D06BB12FD24B1976";
-
-    // private String secretKey = "RTFNlN5nra6RQNiI2O5b4pLRjnFIwVjNptMa9FHV";
-
-    // private AmazonS3 s3Client;
 
     @Autowired
     private S3Client s3Client;
@@ -64,6 +61,32 @@ public class S3ServiceImpl {
 
     private String getFileUrl(String cid) {
         return String.format("%s/%s", endpoint, cid);
+    }
+
+    public String uploadRichText(String content) throws IOException {
+        String key = UUID.randomUUID().toString() + ".txt";
+        Path tempFile = Files.createTempFile("temp", ".txt");
+        Files.write(tempFile, content.getBytes(StandardCharsets.UTF_8));
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        s3Client.putObject(putObjectRequest, tempFile);
+
+        Files.delete(tempFile); // Clean up the temporary file
+
+        HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
+        String cid = headObjectResponse.metadata().get("cid");
+
+        return getFileUrl(cid);
+
     }
 
 }

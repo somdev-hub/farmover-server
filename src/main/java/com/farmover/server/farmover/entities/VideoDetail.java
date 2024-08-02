@@ -53,11 +53,16 @@ public class VideoDetail {
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CommentVideo> videoComment;
 
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<VideoViews> views;
+
     private Integer upCount = 0;
 
     private Integer downCount = 0;
 
     private Integer commentCount = 0;
+
+    private Integer viewCount = 0;
 
     private Date date;
 

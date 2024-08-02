@@ -9,5 +9,4 @@ public class CommentVideoRequest {
 
     String email;
 
-    Integer videoId;
 }
