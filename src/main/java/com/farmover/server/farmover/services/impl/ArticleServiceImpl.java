@@ -155,7 +155,17 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     public void deleteArticle(Integer id) {
-        repo.deleteById(id);
+        ArticleDetail articleDetail = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("article", "id", id.toString()));
+
+        Boolean isThumbnailDeleted = s3ServiceImpl.deleteFile(articleDetail.getThumbnail());
+        Boolean isContentDeleted = s3ServiceImpl.deleteFile(articleDetail.getContent());
+
+        if (!isThumbnailDeleted || !isContentDeleted) {
+            throw new RuntimeException("Error deleting article");
+        } else {
+            repo.deleteById(id);
+        }
     }
 
     @Override
@@ -273,6 +283,7 @@ public class ArticleServiceImpl implements ArticleService {
             ArticleViews view = new ArticleViews();
             view.setEmail(email);
             view.setArticle(article);
+            view.setDate(new Date(System.currentTimeMillis()));
             article.getArticleViews().add(view);
         }
 

@@ -1,5 +1,7 @@
 package com.farmover.server.farmover.entities;
 
+import java.sql.Date;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,4 +23,6 @@ public class VideoViews {
     private VideoDetail video;
 
     private String viewerEmail;
+
+    private Date date;
 }

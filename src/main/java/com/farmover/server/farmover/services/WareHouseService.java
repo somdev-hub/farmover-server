@@ -7,6 +7,8 @@ import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.payloads.StorageBookingsDto;
 import com.farmover.server.farmover.payloads.WareHouseDto;
 import com.farmover.server.farmover.payloads.WarehouseCardDto;
+import com.farmover.server.farmover.payloads.records.MonthStorageUsageOverviewRecord;
+import com.farmover.server.farmover.payloads.records.WarehouseMonthlySalesRecord;
 import com.farmover.server.farmover.payloads.records.WarehouseSalesRecord;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
 
@@ -27,5 +29,9 @@ public interface WareHouseService {
     List<StorageBookingsDto> getBookings(String email);
 
     List<WarehouseSalesRecord> getSalesOverview(String email);
+
+    List<MonthStorageUsageOverviewRecord> getMonthStorageUsageOverview(String email);
+
+    List<WarehouseMonthlySalesRecord> getSalesRecord(String email);
 
 }

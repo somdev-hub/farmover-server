@@ -57,8 +57,10 @@ public class ArticleController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteArticle(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteArticle(@PathVariable Integer id) {
+
         serviceImp.deleteArticle(id);
+        return new ResponseEntity<String>("article deleted", HttpStatus.OK);
     }
 
     @GetMapping("/")

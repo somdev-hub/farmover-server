@@ -55,4 +55,22 @@ public class ChartController {
                 HttpStatus.OK);
     }
 
+    @GetMapping("/content-creator/views-by-roles")
+    public ResponseEntity<Map<String, Map<String, Integer>>> getViewsByRoles(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Map<String, Integer>>>(chartServices.getViewCountByRoles(email),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/content-creator/views-by-month")
+    public ResponseEntity<Map<String, Map<String, Integer>>> getViewsByMonths(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Map<String, Integer>>>(chartServices.getViewsCountByMonths(email),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/content-creator/engagements-by-roles")
+    public ResponseEntity<Map<String, Map<String, Integer>>> getEngagementsByRoles(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Map<String, Integer>>>(chartServices.getEngagementsCountByRoles(email),
+                HttpStatus.OK);
+    }
+
 }

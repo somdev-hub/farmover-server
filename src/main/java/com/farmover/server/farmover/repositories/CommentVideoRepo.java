@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.repositories;
 
+import java.sql.Date;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -16,5 +17,7 @@ public interface CommentVideoRepo extends JpaRepository<CommentVideo, Integer> {
     List<CommentVideo> findByVideo(VideoDetail video);
 
     Page<CommentVideo> findByVideo(VideoDetail video, Pageable pageable);
+
+    List<CommentVideo> findByVideoAndDate(VideoDetail video, Date date);
 
 }

@@ -66,7 +66,7 @@ public class VideoServiceImp implements VideoService {
             url = s3ServiceImpl.uploadFile(video.getVideo());
             thumbnail = s3ServiceImpl.uploadFile(video.getThumbnail());
         } catch (IOException e) {
-            throw new RuntimeException("Video not found");
+            throw new RuntimeException("Video upload error " + e);
         }
 
         VideoDetail videoDetail = new VideoDetail();
@@ -185,6 +185,7 @@ public class VideoServiceImp implements VideoService {
             VideoViews view = new VideoViews();
             view.setVideo(video);
             view.setViewerEmail(email);
+            view.setDate(new Date(System.currentTimeMillis()));
             video.getViews().add(view);
         }
 

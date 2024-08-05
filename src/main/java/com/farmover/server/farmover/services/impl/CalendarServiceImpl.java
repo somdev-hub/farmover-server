@@ -7,18 +7,22 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.farmover.server.farmover.entities.ArticleDetail;
 import com.farmover.server.farmover.entities.Production;
 import com.farmover.server.farmover.entities.Role;
 import com.farmover.server.farmover.entities.Services;
 import com.farmover.server.farmover.entities.StorageBookings;
 import com.farmover.server.farmover.entities.User;
+import com.farmover.server.farmover.entities.VideoDetail;
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.entities.WarehouseSales;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.CalendarEventsDto;
+import com.farmover.server.farmover.repositories.ArticleRepo;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.ServicesRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
+import com.farmover.server.farmover.repositories.VideoRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.farmover.server.farmover.services.CalendarService;
 
@@ -37,6 +41,12 @@ public class CalendarServiceImpl implements CalendarService {
         @Autowired
         private WareHouseRepo warehouseRepo;
 
+        @Autowired
+        private VideoRepo videoRepo;
+
+        @Autowired
+        private ArticleRepo articleRepo;
+
         @Override
         public List<CalendarEventsDto> getCalendarEvents(String email, Role role) {
 
@@ -51,6 +61,9 @@ public class CalendarServiceImpl implements CalendarService {
                                 break;
                         case Role.WAREHOUSE_MANAGER:
                                 calendarEvents = getWarehouseCalendarEvents(email);
+                                break;
+                        case Role.CONTENT_CREATOR:
+                                calendarEvents = getContentCreatorEvents(email);
                                 break;
 
                         default:
@@ -135,6 +148,36 @@ public class CalendarServiceImpl implements CalendarService {
                                         + sale.getQuantity() + " " + sale.getUnit());
                         calendarEventsDto.setStart(sale.getDate().toLocalDate());
                         calendarEventsDto.setEnd(sale.getDate().toLocalDate());
+
+                        events.add(calendarEventsDto);
+                });
+
+                return events;
+        }
+
+        public List<CalendarEventsDto> getContentCreatorEvents(String email) {
+                User user = userRepo.findByEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("user", "email", email));
+                ArrayList<VideoDetail> videos = videoRepo.findByAuthor(user);
+
+                ArrayList<ArticleDetail> articles = articleRepo.findByAuthor(user);
+
+                List<CalendarEventsDto> events = new ArrayList<>();
+
+                videos.forEach(video -> {
+                        CalendarEventsDto calendarEventsDto = new CalendarEventsDto();
+                        calendarEventsDto.setTitle("Video: " + video.getTitle());
+                        calendarEventsDto.setStart(video.getDate().toLocalDate());
+                        calendarEventsDto.setEnd(video.getDate().toLocalDate());
+
+                        events.add(calendarEventsDto);
+                });
+
+                articles.forEach(article -> {
+                        CalendarEventsDto calendarEventsDto = new CalendarEventsDto();
+                        calendarEventsDto.setTitle("Article: " + article.getTitle());
+                        calendarEventsDto.setStart(article.getDate().toLocalDate());
+                        calendarEventsDto.setEnd(article.getDate().toLocalDate());
 
                         events.add(calendarEventsDto);
                 });

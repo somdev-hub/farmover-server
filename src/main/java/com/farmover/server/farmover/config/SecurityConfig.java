@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(
                         req -> req
-                                .requestMatchers("/warehouse/**").hasAnyRole("WAREHOUSE_MANAGER", "ADMIN")
+
                                 .requestMatchers("/storage/**").hasAnyRole("WAREHOUSE_MANAGER", "ADMIN")
 
                                 .requestMatchers("/users/").hasRole("ADMIN")

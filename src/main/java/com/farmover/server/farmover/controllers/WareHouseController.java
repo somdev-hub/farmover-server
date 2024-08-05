@@ -20,6 +20,8 @@ import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.payloads.StorageBookingsDto;
 import com.farmover.server.farmover.payloads.WareHouseDto;
 import com.farmover.server.farmover.payloads.WarehouseCardDto;
+import com.farmover.server.farmover.payloads.records.MonthStorageUsageOverviewRecord;
+import com.farmover.server.farmover.payloads.records.WarehouseMonthlySalesRecord;
 import com.farmover.server.farmover.payloads.records.WarehouseSalesRecord;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
 import com.farmover.server.farmover.services.impl.S3ServiceImpl;
@@ -81,6 +83,19 @@ public class WareHouseController {
     @GetMapping("/overview")
     public ResponseEntity<List<WarehouseSalesRecord>> getWarehouseSales(@RequestParam String email) {
         return new ResponseEntity<List<WarehouseSalesRecord>>(wareHouseServiceImpl.getSalesOverview(email),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<List<MonthStorageUsageOverviewRecord>> getRecents(@RequestParam String email) {
+        return new ResponseEntity<List<MonthStorageUsageOverviewRecord>>(
+                wareHouseServiceImpl.getMonthStorageUsageOverview(email),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/monthly-sales")
+    public ResponseEntity<List<WarehouseMonthlySalesRecord>> getSales(@RequestParam String email) {
+        return new ResponseEntity<List<WarehouseMonthlySalesRecord>>(wareHouseServiceImpl.getSalesRecord(email),
                 HttpStatus.OK);
     }
 

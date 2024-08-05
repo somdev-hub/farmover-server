@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.Storage;
+import com.farmover.server.farmover.entities.StorageBookings;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.entities.WarehouseFacilities;
@@ -18,11 +19,15 @@ import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.StorageBookingsDto;
 import com.farmover.server.farmover.payloads.WareHouseDto;
 import com.farmover.server.farmover.payloads.WarehouseCardDto;
+import com.farmover.server.farmover.payloads.records.MonthStorageUsageOverviewRecord;
+import com.farmover.server.farmover.payloads.records.WarehouseMonthlySalesRecord;
 import com.farmover.server.farmover.payloads.records.WarehouseSalesRecord;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
 import com.farmover.server.farmover.repositories.ProductionRepo;
+import com.farmover.server.farmover.repositories.StorageBookingsRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
+import com.farmover.server.farmover.repositories.WarehouseSalesRepo;
 import com.farmover.server.farmover.services.WareHouseService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +46,11 @@ public class WareHouseServiceImpl implements WareHouseService {
     S3ServiceImpl s3ServiceImpl;
     @Autowired
     ProductionRepo productionRepo;
+    @Autowired
+    WarehouseSalesRepo warehouseSalesRepo;
+
+    @Autowired
+    StorageBookingsRepo storageBookingsRepo;
 
     @Override
     public WareHouseDto getWarehouse(Integer id) {
@@ -92,7 +102,7 @@ public class WareHouseServiceImpl implements WareHouseService {
     }
 
     @Override
-    public void updateWareHouse(Warehouse wh, Integer id){
+    public void updateWareHouse(Warehouse wh, Integer id) {
         Warehouse warehouse = wareHouseRepo.findById(id).orElseThrow(() -> {
             throw new ResourceNotFoundException("WareHouse", "wareHouse id", id.toString());
         });
@@ -115,8 +125,6 @@ public class WareHouseServiceImpl implements WareHouseService {
 
         return warehouseDto;
     }
-
-    
 
     @Override
     public void deleteWarehouse(Integer id) {
@@ -195,6 +203,54 @@ public class WareHouseServiceImpl implements WareHouseService {
         });
 
         return salesRecords;
+    }
+
+    @Override
+    public List<MonthStorageUsageOverviewRecord> getMonthStorageUsageOverview(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Warehouse warehouse = wareHouseRepo.findByOwner(user);
+
+        List<MonthStorageUsageOverviewRecord> records = new ArrayList<>();
+
+        warehouse.getStorages().forEach(storage -> {
+            List<StorageBookings> bookings = storageBookingsRepo.findBookingsByStorageWithinCurrentMonth(storage);
+
+            bookings.stream().map(booking -> {
+                User client = userRepo.findByEmail(booking.getClientEmail())
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("User", "email", booking.getClientEmail()));
+
+                return new MonthStorageUsageOverviewRecord(
+                        client.getUname(),
+                        storage.getStorageType(),
+                        booking.getBookedWeight(),
+                        booking.getBookingDuration());
+            }).forEach(records::add);
+        });
+
+        return records;
+    }
+
+    @Override
+    public List<WarehouseMonthlySalesRecord> getSalesRecord(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Warehouse warehouse = wareHouseRepo.findByOwner(user);
+
+        List<WarehouseMonthlySalesRecord> records = new ArrayList<>();
+
+        warehouseSalesRepo.findByWarehouseAndMonth(warehouse).stream().map(sale -> {
+            return new WarehouseMonthlySalesRecord(
+                    sale.getCommission(),
+                    sale.getDate(),
+                    sale.getBuyer(),
+                    "CREDIT");
+        }).forEach(records::add);
+
+        return records;
     }
 
 }

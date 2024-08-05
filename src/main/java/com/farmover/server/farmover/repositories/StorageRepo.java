@@ -8,6 +8,6 @@ import com.farmover.server.farmover.entities.Storage;
 
 import com.farmover.server.farmover.entities.Warehouse;
 
-public interface StorageRepo  extends JpaRepository<Storage, Integer>  {
+public interface StorageRepo extends JpaRepository<Storage, Integer> {
     ArrayList<Storage> findByWarehouse(Warehouse warehouse);
 }
