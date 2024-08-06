@@ -32,6 +32,11 @@ public class ChartController {
         return new ResponseEntity<Map<String, Double>>(chartServices.getRevenue(email), HttpStatus.OK);
     }
 
+    @GetMapping("/weekly-service-usage")
+    public ResponseEntity<Map<String, Integer>> getWeeklyUsage(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Integer>>(chartServices.getWeeklyServiceUsage(email), HttpStatus.OK);
+    }
+
     @GetMapping("/production")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Long>> getProduction(@RequestParam String email) {

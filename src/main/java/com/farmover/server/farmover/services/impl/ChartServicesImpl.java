@@ -18,6 +18,7 @@ import com.farmover.server.farmover.entities.DownVoteArticle;
 import com.farmover.server.farmover.entities.DownVoteVideo;
 import com.farmover.server.farmover.entities.Production;
 import com.farmover.server.farmover.entities.Role;
+import com.farmover.server.farmover.entities.Services;
 import com.farmover.server.farmover.entities.TransactionType;
 import com.farmover.server.farmover.entities.Transactions;
 import com.farmover.server.farmover.entities.UpVoteArticle;
@@ -29,6 +30,7 @@ import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.repositories.ArticleRepo;
 import com.farmover.server.farmover.repositories.ProductionRepo;
+import com.farmover.server.farmover.repositories.ServicesRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.repositories.VideoRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
@@ -50,6 +52,9 @@ public class ChartServicesImpl {
 
     @Autowired
     private ArticleRepo articleRepo;
+
+    @Autowired
+    private ServicesRepo servicesRepo;
 
     private final String[] MONTHS = { "January", "February", "March", "April", "May", "June", "July", "August",
             "September", "October", "November", "December" };
@@ -98,6 +103,27 @@ public class ChartServicesImpl {
         });
 
         return monthWiseIncome;
+    }
+
+    public Map<String, Integer> getWeeklyServiceUsage(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        List<Services> services = servicesRepo.findByOwner(user).orElseThrow(() -> {
+            throw new ResourceNotFoundException("Service", "owner", user.getEmail());
+        });
+
+        Map<String, Integer> weeklyServiceUsage = new HashMap<>();
+
+        services.forEach(service -> {
+            service.getContractDetails().forEach(detail -> {
+                int week = detail.getContractSignDate().getDayOfWeek().getValue();
+                String weekName = "Week " + week;
+                weeklyServiceUsage.merge(weekName, 1, Integer::sum);
+            });
+        });
+
+        return weeklyServiceUsage;
     }
 
     public Map<String, Long> getMonthlyProductionTally(String email) {
@@ -413,5 +439,4 @@ public class ChartServicesImpl {
         return engagementsCountByRoles;
     }
 
-    // public Map<String>
 }

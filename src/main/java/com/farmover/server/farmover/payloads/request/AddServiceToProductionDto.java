@@ -8,5 +8,4 @@ public class AddServiceToProductionDto {
     private Integer serviceId;
     private String email;
     private Integer duration;
-
 }

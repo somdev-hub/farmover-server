@@ -2,10 +2,14 @@ package com.farmover.server.farmover.services;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
 import com.farmover.server.farmover.payloads.records.OrderOverview;
 import com.farmover.server.farmover.payloads.records.ProductionSalesDataRecord;
+import com.farmover.server.farmover.payloads.records.ProductionServicesUsageRecord;
+import com.farmover.server.farmover.payloads.records.ProductionWarehouseRecord;
 import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
 
@@ -19,17 +23,9 @@ public interface ProductionService {
 
     void deleteProduction(Integer token);
 
-    ProductionDto getProductionByStatus(String status);
-
-    ProductionDto getProductionByWarehouse(Integer warehouseId);
-
     List<ProductionDto> getProductionByFarmer(String email);
 
-    ProductionDto getProductionByCrop(Integer cropId);
-
     List<CropWiseProduction> getCropWiseProduction(String email);
-
-    List<ProductionDto> getAllProductions();
 
     void addServiceToProduction(AddServiceToProductionDto addServiceToProductionDto);
 
@@ -37,6 +33,10 @@ public interface ProductionService {
 
     List<ProductionSalesDataRecord> getSalesData(String email);
 
-    List<OrderOverview> getOrderOverview(String email);
+    Page<OrderOverview> getOrderOverview(String email, Integer page, Integer size);
+
+    List<ProductionServicesUsageRecord> getServiceUsage(String email);
+
+    List<ProductionWarehouseRecord> getUsedWarehouses(String email);
 
 }

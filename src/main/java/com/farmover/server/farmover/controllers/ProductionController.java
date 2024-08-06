@@ -3,6 +3,7 @@ package com.farmover.server.farmover.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,6 +21,8 @@ import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
 import com.farmover.server.farmover.payloads.records.OrderOverview;
 import com.farmover.server.farmover.payloads.records.ProductionSalesDataRecord;
+import com.farmover.server.farmover.payloads.records.ProductionServicesUsageRecord;
+import com.farmover.server.farmover.payloads.records.ProductionWarehouseRecord;
 import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
 import com.farmover.server.farmover.services.impl.ProductionServiceImpl;
@@ -82,6 +85,8 @@ public class ProductionController {
     public ResponseEntity<?> addServiceToProduction(@RequestBody AddServiceToProductionDto addServiceToProductionDto) {
         productionService.addServiceToProduction(addServiceToProductionDto);
 
+        // System.out.println(addServiceToProductionDto.getProductionToken());
+
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -100,8 +105,22 @@ public class ProductionController {
     }
 
     @GetMapping("/overview")
-    public ResponseEntity<List<OrderOverview>> getOrderOverview(@RequestParam String email) {
-        return new ResponseEntity<List<OrderOverview>>(productionService.getOrderOverview(email), HttpStatus.OK);
+    public ResponseEntity<Page<OrderOverview>> getOrderOverview(@RequestParam String email, @RequestParam Integer page,
+            @RequestParam Integer size) {
+        return new ResponseEntity<Page<OrderOverview>>(productionService.getOrderOverview(email, page, size),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/service-usage")
+    public ResponseEntity<List<ProductionServicesUsageRecord>> getServiceUsage(@RequestParam String email) {
+        return new ResponseEntity<List<ProductionServicesUsageRecord>>(productionService.getServiceUsage(email),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/warehouses")
+    public ResponseEntity<List<ProductionWarehouseRecord>> getUsedWarehouses(@RequestParam String email) {
+        return new ResponseEntity<List<ProductionWarehouseRecord>>(productionService.getUsedWarehouses(email),
+                HttpStatus.OK);
     }
 
 }

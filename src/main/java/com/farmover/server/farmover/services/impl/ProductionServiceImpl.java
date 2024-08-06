@@ -12,6 +12,10 @@ import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.ContractDetails;
@@ -30,11 +34,15 @@ import com.farmover.server.farmover.payloads.CropWiseProduction;
 import com.farmover.server.farmover.payloads.ProductionDto;
 import com.farmover.server.farmover.payloads.records.OrderOverview;
 import com.farmover.server.farmover.payloads.records.ProductionSalesDataRecord;
+import com.farmover.server.farmover.payloads.records.ProductionServicesUsageRecord;
+import com.farmover.server.farmover.payloads.records.ProductionWarehouseRecord;
 import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
+import com.farmover.server.farmover.repositories.ContractDetailsRepo;
 import com.farmover.server.farmover.repositories.CropActivityRepo;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.ServicesRepo;
+import com.farmover.server.farmover.repositories.StorageBookingsRepo;
 import com.farmover.server.farmover.repositories.StorageRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.repositories.WareHouseRepo;
@@ -65,6 +73,12 @@ public class ProductionServiceImpl implements ProductionService {
 
         @Autowired
         private StorageRepo storageRepo;
+
+        @Autowired
+        private ContractDetailsRepo contractDetailsRepo;
+
+        @Autowired
+        private StorageBookingsRepo storageBookingsRepo;
 
         @Override
         public ProductionDto addProduction(ProductionDto productionDto, String email) {
@@ -161,18 +175,6 @@ public class ProductionServiceImpl implements ProductionService {
         }
 
         @Override
-        public ProductionDto getProductionByStatus(String status) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'getProductionByStatus'");
-        }
-
-        @Override
-        public ProductionDto getProductionByWarehouse(Integer warehouseId) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'getProductionByWarehouse'");
-        }
-
-        @Override
         public List<ProductionDto> getProductionByFarmer(String email) {
                 User user = userRepo.findByEmail(email)
                                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
@@ -186,18 +188,6 @@ public class ProductionServiceImpl implements ProductionService {
 
                 return productionDtos;
 
-        }
-
-        @Override
-        public ProductionDto getProductionByCrop(Integer cropId) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'getProductionByCrop'");
-        }
-
-        @Override
-        public List<ProductionDto> getAllProductions() {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'getAllProductions'");
         }
 
         @Override
@@ -269,6 +259,7 @@ public class ProductionServiceImpl implements ProductionService {
                 contractDetail.setAddress(user.getAddress());
                 contractDetail.setPhone(user.getPhone());
                 contractDetail.setStatus("COMMISSIONED");
+                contractDetail.setProductionToken(dto.getProductionToken());
 
                 service.getContractDetails().add(contractDetail);
 
@@ -421,13 +412,14 @@ public class ProductionServiceImpl implements ProductionService {
         }
 
         @Override
-        public List<OrderOverview> getOrderOverview(String email) {
+        public Page<OrderOverview> getOrderOverview(String email, Integer page, Integer size) {
                 User user = userRepo.findByEmail(email)
                                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
                 List<Transactions> transactions = user.getTransactions().stream()
-
                                 .toList();
+
+                Pageable pageable = PageRequest.of(page, size);
 
                 List<OrderOverview> orderOverviews = new ArrayList<>();
 
@@ -464,7 +456,62 @@ public class ProductionServiceImpl implements ProductionService {
                         }
                 });
 
-                return orderOverviews;
+                int start = (int) pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), orderOverviews.size());
+                List<OrderOverview> pagedOrderOverviews = orderOverviews.subList(start, end);
+
+                return new PageImpl<>(pagedOrderOverviews, pageable, orderOverviews.size());
+        }
+
+        @Override
+        public List<ProductionServicesUsageRecord> getServiceUsage(String email) {
+
+                List<ProductionServicesUsageRecord> productionServicesUsageRecords = new ArrayList<>();
+
+                List<ContractDetails> contractDetails = contractDetailsRepo.findByFarmer(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("ContractDetails", "farmer email",
+                                                email));
+
+                contractDetails.forEach(detail -> {
+                        Production production = productionRepo.findByToken(detail.getProductionToken())
+                                        .orElseThrow(() -> new ResourceNotFoundException("Production", "token",
+                                                        detail.getProductionToken().toString()));
+                        ProductionServicesUsageRecord record = new ProductionServicesUsageRecord(
+                                        detail.getService().getServiceName(), production.getCrop(),
+                                        detail.getContractSignDate(), detail.getDuration(), detail.getPrice(),
+                                        detail.getProductionToken(), detail.getStatus());
+
+                        productionServicesUsageRecords.add(record);
+                });
+
+                return productionServicesUsageRecords;
+        }
+
+        @Override
+        public List<ProductionWarehouseRecord> getUsedWarehouses(String email) {
+                List<StorageBookings> bookings = storageBookingsRepo.findByClientEmail(email)
+                                .orElseThrow(() -> new ResourceNotFoundException("Bookings", "email", email));
+
+                List<ProductionWarehouseRecord> productionWarehouseRecords = new ArrayList<>();
+
+                bookings.forEach(booking -> {
+                        ProductionWarehouseRecord record = new ProductionWarehouseRecord(
+                                        booking.getStorage().getWarehouse().getName(),
+                                        booking.getCropName(),
+                                        booking.getProductionToken(),
+                                        booking.getBookedWeight(),
+                                        booking.getItemUnit(),
+                                        booking.getBookingDate(),
+                                        booking.getBookedPrice(),
+                                        booking.getBookingDuration());
+
+                        productionWarehouseRecords.add(record);
+                });
+
+                // Sort the list by booking date
+                productionWarehouseRecords.sort(Comparator.comparing(ProductionWarehouseRecord::date).reversed());
+
+                return productionWarehouseRecords;
         }
 
 }
