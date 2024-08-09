@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,12 +85,6 @@ public class ServicesServiceImpl implements ServicesService {
         Services savedService = servicesRepo.save(service);
 
         return modelMapper.map(savedService, ServicesDto.class);
-    }
-
-    @Override
-    public ServicesDto updateService(ServicesDto servicesDto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'updateService'");
     }
 
     @Override
@@ -186,6 +182,57 @@ public class ServicesServiceImpl implements ServicesService {
                 }).toList();
 
         return allContractDetails;
+    }
+
+    @Override
+    public ServicesDto updateService(ServicesRequestDto servicesDto, Integer id) throws IOException {
+        Services service = servicesRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Service", "id", Integer.toString(id)));
+
+        service.setServiceName(servicesDto.getServiceName());
+        service.setServiceType(servicesDto.getServiceType());
+        service.setFuelType(servicesDto.getFuelType());
+
+        List<String> featureStrings = objectMapper.readValue(servicesDto.getFeatures(),
+                new TypeReference<List<String>>() {
+                });
+
+        // Clear the existing features
+        service.getFeatures().clear();
+
+        List<ServiceFeatures> serviceFeatures = new ArrayList<>();
+        for (String featureString : featureStrings) {
+            ServiceFeatures serviceFeature = new ServiceFeatures();
+            serviceFeature.setFeature(featureString);
+            serviceFeature.setService(service); // Set the service in each feature
+            serviceFeatures.add(serviceFeature);
+            // Optionally save each ServiceFeature entity here if not cascading persist
+        }
+
+        // Set the collection of ServiceFeatures to the service
+        service.setFeatures(serviceFeatures);
+
+        service.setPricePerDay(Double.parseDouble(servicesDto.getPricePerDay()));
+
+        if (servicesDto.getServiceImage() != null) {
+            String imageUrl = s3Service.uploadFile(servicesDto.getServiceImage());
+            service.setServiceImage(imageUrl);
+        }
+
+        Services savedService = servicesRepo.save(service);
+
+        return modelMapper.map(savedService, ServicesDto.class);
+    }
+
+    @Override
+    public Map<Integer, String> getListOfServices(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        List<Services> services = servicesRepo.findByOwner(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Services", "owner", email));
+
+        return services.stream().collect(Collectors.toMap(Services::getId, Services::getServiceName));
     }
 
 }

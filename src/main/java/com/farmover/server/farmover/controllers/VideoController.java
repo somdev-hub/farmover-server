@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.controllers;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,14 @@ public class VideoController {
             @RequestBody CommentVideoRequest comment) {
         serviceImp.addCommentToVideo(id, comment.getEmail(), comment.getComment());
         return new ResponseEntity<String>("comment added", HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> editVideo(@PathVariable Integer id, @ModelAttribute VideoRequestDto dto)
+            throws IOException {
+
+        serviceImp.editVideo(id, dto);
+        return new ResponseEntity<String>("video updated", HttpStatus.ACCEPTED);
     }
 
 }

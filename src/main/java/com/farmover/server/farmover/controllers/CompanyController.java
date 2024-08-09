@@ -28,6 +28,7 @@ import com.farmover.server.farmover.payloads.records.AvailableCropWarehouseCard;
 import com.farmover.server.farmover.payloads.records.RegisteredFarmersInfo;
 import com.farmover.server.farmover.payloads.request.CompanyRegisterDto;
 import com.farmover.server.farmover.services.impl.CompanyServiceImpl;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @CrossOrigin
@@ -44,6 +45,11 @@ public class CompanyController {
         CompanyDto registerCompany = companyService.registerCompany(dto, email);
 
         return new ResponseEntity<CompanyDto>(registerCompany, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/")
+    public ResponseEntity<CompanyDto> getCompany(@RequestParam String email) {
+        return new ResponseEntity<CompanyDto>(companyService.getCompany(email), HttpStatus.OK);
     }
 
     @GetMapping("/each-item")
@@ -89,6 +95,13 @@ public class CompanyController {
     @GetMapping("/crop-cards")
     public ResponseEntity<Map<Crops, int[]>> getCropCards(@RequestParam String email) {
         return new ResponseEntity<Map<Crops, int[]>>(companyService.getCompanyCropCards(email), HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/{email}", consumes = "multipart/form-data")
+    public ResponseEntity<CompanyDto> updateCompany(@PathVariable String email, @ModelAttribute CompanyRegisterDto dto)
+            throws IOException {
+
+        return new ResponseEntity<CompanyDto>(companyService.updateCompany(dto, email), HttpStatus.OK);
     }
 
 }

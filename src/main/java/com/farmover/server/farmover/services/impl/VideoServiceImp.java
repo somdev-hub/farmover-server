@@ -248,4 +248,43 @@ public class VideoServiceImp implements VideoService {
         videoRepo.save(video);
     }
 
+    @Override
+    public void editVideo(Integer id, VideoRequestDto video) throws IOException {
+        VideoDetail videoDetail = videoRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Video", "id", id.toString()));
+
+        String url = "";
+        String thumbnail = "";
+
+        try {
+            if (video.getVideo() != null) {
+                if (videoDetail.getUrl() != null) {
+                    Boolean deleted = s3ServiceImpl.deleteFile(videoDetail.getUrl());
+                }
+                url = s3ServiceImpl.uploadFile(video.getVideo());
+                videoDetail.setUrl(url);
+            }
+            if (video.getThumbnail() != null) {
+                if (videoDetail.getThumbnail() != null) {
+                    Boolean deleted = s3ServiceImpl.deleteFile(videoDetail.getThumbnail());
+                }
+                thumbnail = s3ServiceImpl.uploadFile(video.getThumbnail());
+                videoDetail.setThumbnail(thumbnail);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Video upload error " + e);
+        }
+
+        videoDetail.setDescription(video.getDescription());
+        videoDetail.setTitle(video.getTitle());
+        videoDetail.setLongDescription(video.getLongDescription());
+
+        List<String> tags = objectMapper.readValue(video.getTags(), new TypeReference<List<String>>() {
+        });
+        videoDetail.setTags(tags);
+
+        videoRepo.save(videoDetail);
+    }
+
 }

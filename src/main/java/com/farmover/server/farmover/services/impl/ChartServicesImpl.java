@@ -14,6 +14,8 @@ import com.farmover.server.farmover.entities.ArticleDetail;
 import com.farmover.server.farmover.entities.ArticleViews;
 import com.farmover.server.farmover.entities.CommentArticle;
 import com.farmover.server.farmover.entities.CommentVideo;
+import com.farmover.server.farmover.entities.Company;
+import com.farmover.server.farmover.entities.CompanyPurchases;
 import com.farmover.server.farmover.entities.DownVoteArticle;
 import com.farmover.server.farmover.entities.DownVoteVideo;
 import com.farmover.server.farmover.entities.Production;
@@ -29,6 +31,8 @@ import com.farmover.server.farmover.entities.VideoViews;
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.repositories.ArticleRepo;
+import com.farmover.server.farmover.repositories.CompanyPurchasesRepo;
+import com.farmover.server.farmover.repositories.CompanyRepo;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.ServicesRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
@@ -55,6 +59,12 @@ public class ChartServicesImpl {
 
     @Autowired
     private ServicesRepo servicesRepo;
+
+    @Autowired
+    private CompanyRepo companyRepo;
+
+    @Autowired
+    private CompanyPurchasesRepo companyPurchasesRepo;
 
     private final String[] MONTHS = { "January", "February", "March", "April", "May", "June", "July", "August",
             "September", "October", "November", "December" };
@@ -439,4 +449,31 @@ public class ChartServicesImpl {
         return engagementsCountByRoles;
     }
 
+    public Map<String, Map<String, Double>> getCompanyMonthlyPurchases(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Company company = companyRepo.findByManager(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "owner", user.getEmail()));
+
+        List<CompanyPurchases> purchases = companyPurchasesRepo.findByCompany(company);
+
+        Map<String, Map<String, Double>> companyMonthlyPurchases = new HashMap<>();
+
+        purchases.forEach(purchase -> {
+            int month = purchase.getPurchaseDate().getMonthValue();
+            String monthName = MONTHS[month - 1];
+
+            if (companyMonthlyPurchases.containsKey(monthName)) {
+                Map<String, Double> purchaseMap = companyMonthlyPurchases.get(monthName);
+                purchaseMap.merge(purchase.getCrop().toString(), purchase.getPurchaseTotal(), Double::sum);
+            } else {
+                Map<String, Double> purchaseMap = new HashMap<>();
+                purchaseMap.put(purchase.getCrop().toString(), purchase.getPurchaseTotal());
+                companyMonthlyPurchases.put(monthName, purchaseMap);
+            }
+        });
+
+        return companyMonthlyPurchases;
+    }
 }

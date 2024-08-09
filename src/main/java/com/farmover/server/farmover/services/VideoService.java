@@ -13,6 +13,8 @@ import com.farmover.server.farmover.payloads.request.VideoRequestDto;
 public interface VideoService {
         void addVideo(String userEmail, VideoRequestDto video) throws IOException;
 
+        void editVideo(Integer id, VideoRequestDto video) throws IOException;
+
         List<VideoDto> getVideoByAuthor(String ownerEmail);
 
         VideoDto getVideoByid(Integer id);

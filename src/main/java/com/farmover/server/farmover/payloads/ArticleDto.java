@@ -33,5 +33,7 @@ public class ArticleDto {
 
     private Boolean isDownVoted;
 
+    private List<String> tags;
+
     private List<CommentArticleDto> articleComment;
 }

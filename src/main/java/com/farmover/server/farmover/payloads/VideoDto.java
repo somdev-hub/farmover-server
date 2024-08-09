@@ -18,4 +18,5 @@ public class VideoDto {
     private List<String> tags;
     private Integer upCount;
     private Integer downCount;
+    private Integer viewCount;
 }

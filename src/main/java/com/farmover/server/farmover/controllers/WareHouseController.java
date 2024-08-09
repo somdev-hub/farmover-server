@@ -26,6 +26,7 @@ import com.farmover.server.farmover.payloads.records.WarehouseSalesRecord;
 import com.farmover.server.farmover.payloads.request.WarehouseRequestDto;
 import com.farmover.server.farmover.services.impl.S3ServiceImpl;
 import com.farmover.server.farmover.services.impl.WareHouseServiceImpl;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @CrossOrigin
@@ -97,6 +98,13 @@ public class WareHouseController {
     public ResponseEntity<List<WarehouseMonthlySalesRecord>> getSales(@RequestParam String email) {
         return new ResponseEntity<List<WarehouseMonthlySalesRecord>>(wareHouseServiceImpl.getSalesRecord(email),
                 HttpStatus.OK);
+    }
+
+    @PutMapping("/{email}")
+    public ResponseEntity<?> uodateWarehouse(@PathVariable String email, @ModelAttribute WarehouseRequestDto dto)
+            throws IOException {
+        wareHouseServiceImpl.updateWarehouse(email, dto);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

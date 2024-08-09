@@ -353,4 +353,48 @@ public class CompanyServiceImpl implements CompanyServices {
         return cropMap;
     }
 
+    @Override
+    public CompanyDto getCompany(String email) {
+        User user = userRepo.findByEmail(email).orElseThrow(() -> {
+            throw new ResourceNotFoundException("User", "email", email);
+        });
+
+        Company company = companyRepo.findByManager(user).orElseThrow(() -> {
+            throw new ResourceNotFoundException("Company", "manager", user.getEmail());
+        });
+
+        return modelMapper.map(company, CompanyDto.class);
+    }
+
+    @Override
+    public CompanyDto updateCompany(CompanyRegisterDto companyRegisterDto, String email) throws IOException {
+        User user = userRepo.findByEmail(email).orElseThrow(() -> {
+            throw new ResourceNotFoundException("User", "email", email);
+        });
+
+        Company company = companyRepo.findByManager(user).orElseThrow(() -> {
+            throw new ResourceNotFoundException("Company", "manager", user.getEmail());
+        });
+
+        company.setAddress(companyRegisterDto.getAddress());
+        company.setCompanyDetails(companyRegisterDto.getCompanyDetails());
+        company.setCompanyIndustry(companyRegisterDto.getCompanyIndustry());
+        company.setName(companyRegisterDto.getName());
+        company.setOwnership(companyRegisterDto.getOwnership());
+        company.setPin(companyRegisterDto.getPin());
+
+        if (companyRegisterDto.getCompanyImage() == null) {
+            Boolean deleted = s3Service.deleteFile(company.getCompanyImage());
+        }
+
+        if (companyRegisterDto.getCompanyImage() != null) {
+            String companyImage = s3Service.uploadFile(companyRegisterDto.getCompanyImage());
+            company.setCompanyImage(companyImage);
+        }
+
+        Company savedCompany = companyRepo.save(company);
+
+        return modelMapper.map(savedCompany, CompanyDto.class);
+    }
+
 }

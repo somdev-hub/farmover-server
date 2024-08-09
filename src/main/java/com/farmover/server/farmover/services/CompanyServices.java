@@ -19,6 +19,10 @@ public interface CompanyServices {
 
     CompanyDto registerCompany(CompanyRegisterDto companyRegisterDto, String email) throws IOException;
 
+    CompanyDto getCompany(String email);
+
+    CompanyDto updateCompany(CompanyRegisterDto companyRegisterDto, String email) throws IOException;
+
     List<CompanyWarehouseCardDto> getWarehouseCardDtos();
 
     Map<StorageType, Map<Crops, ArrayList<FarmerItem>>> getWarehouseMarketData(Integer warehouseId);

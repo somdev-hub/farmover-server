@@ -15,6 +15,7 @@ import com.farmover.server.farmover.entities.StorageBookings;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.entities.Warehouse;
 import com.farmover.server.farmover.entities.WarehouseFacilities;
+import com.farmover.server.farmover.entities.WarehouseOwnership;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.StorageBookingsDto;
 import com.farmover.server.farmover.payloads.WareHouseDto;
@@ -251,6 +252,55 @@ public class WareHouseServiceImpl implements WareHouseService {
         }).forEach(records::add);
 
         return records;
+    }
+
+    @Override
+    public void updateWarehouse(String email, WarehouseRequestDto requestDto) throws IOException {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Warehouse warehouse = wareHouseRepo.findByOwner(user);
+
+        warehouse.setAddress(requestDto.getAddress());
+        warehouse.setName(requestDto.getName());
+        warehouse.setOwnership(
+                WarehouseOwnership.valueOf(requestDto.getOwnership().toUpperCase()));
+
+        warehouse.setPin(requestDto.getPin());
+        warehouse.setWarehouseDetails(requestDto.getWarehouseDetails());
+
+        // Clear existing facilities
+        warehouse.getFacilities().clear();
+        wareHouseRepo.save(warehouse);
+
+        List<String> facilityStrings = objectMapper.readValue(requestDto.getFacilities(),
+                new TypeReference<List<String>>() {
+                });
+
+        List<WarehouseFacilities> warehouseFacilities = new ArrayList<>();
+
+        for (String facility : facilityStrings) {
+            WarehouseFacilities warehouseFacility = new WarehouseFacilities();
+            warehouseFacility.setFacility(facility);
+            warehouseFacility.setWarehouse(warehouse);
+            warehouseFacilities.add(warehouseFacility);
+        }
+
+        warehouse.setFacilities(warehouseFacilities);
+
+        if (requestDto.getWarehouseImage() != null) {
+            Boolean deletedIm = s3ServiceImpl.deleteFile(warehouse.getWarehouseImage());
+            String imString = s3ServiceImpl.uploadFile(requestDto.getWarehouseImage());
+            warehouse.setWarehouseImage(imString);
+
+        }
+        if (requestDto.getWarehouseBackground() != null) {
+            Boolean deletedBg = s3ServiceImpl.deleteFile(warehouse.getWarehouseBackground());
+            String bg = s3ServiceImpl.uploadFile(requestDto.getWarehouseBackground());
+            warehouse.setWarehouseBackground(bg);
+        }
+
+        wareHouseRepo.save(warehouse);
     }
 
 }

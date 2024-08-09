@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.AuthenticationResponse;
+import com.farmover.server.farmover.payloads.UserDto;
 import com.farmover.server.farmover.payloads.request.LoginRequest;
 import com.farmover.server.farmover.payloads.request.UserRequestDto;
 import com.farmover.server.farmover.repositories.UserRepo;
@@ -46,9 +47,9 @@ public class AuthServiceImpl {
         user.setRole(userDto.getRole());
 
         user.setTransactions(new ArrayList<>());
-    
+
         User savedUser = userRepo.save(user);
-      
+
         String token = jwtService.generateToken(savedUser);
 
         return new AuthenticationResponse(token, savedUser.getEmail(), savedUser.getRole().name());
@@ -72,4 +73,12 @@ public class AuthServiceImpl {
                 byUsername.getEmail(),
                 byUsername.getRole().name());
     }
+
+    public UserDto getUserByEmail(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("user", "email", email));
+
+        return modelMapper.map(user, UserDto.class);
+    }
+
 }

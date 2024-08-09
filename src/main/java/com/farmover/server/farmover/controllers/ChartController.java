@@ -78,4 +78,10 @@ public class ChartController {
                 HttpStatus.OK);
     }
 
+    @GetMapping("/company-purchases")
+    public ResponseEntity<Map<String, Map<String, Double>>> getCompanyPurchases(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Map<String, Double>>>(chartServices.getCompanyMonthlyPurchases(email),
+                HttpStatus.OK);
+    }
+
 }

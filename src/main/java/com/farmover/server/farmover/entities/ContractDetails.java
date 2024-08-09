@@ -3,7 +3,6 @@ package com.farmover.server.farmover.entities;
 import java.time.LocalDate;
 
 import io.micrometer.common.lang.NonNull;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

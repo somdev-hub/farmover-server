@@ -11,6 +11,7 @@ import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.TransactionsDto;
 import com.farmover.server.farmover.payloads.UserDto;
+import com.farmover.server.farmover.payloads.request.UpdateUserRequestDto;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.services.UserService;
 
@@ -23,6 +24,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private S3ServiceImpl s3Service;
+
     @Override
     public UserDto getUser(Integer id) {
         User user = userRepo.findById(id).orElseThrow(() -> {
@@ -33,15 +37,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(UserDto userDto, Integer id) {
-        User user = userRepo.findById(id).orElseThrow(() -> {
-            throw new ResourceNotFoundException("User", "user id", Integer.toString(id));
+    public UserDto updateUser(UpdateUserRequestDto userDto, String email) {
+        User user = userRepo.findByEmail(email).orElseThrow(() -> {
+            throw new ResourceNotFoundException("User", "email", email);
         });
 
         user.setUname(userDto.getUname());
         user.setEmail(userDto.getEmail());
         user.setPhone(userDto.getPhone());
         user.setAddress(userDto.getAddress());
+
+        try {
+            if (user.getProfileImage() != null) {
+                Boolean deleted = s3Service.deleteFile(user.getProfileImage());
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error deleting file");
+        }
+
+        String url = "";
+        try {
+            url = s3Service.uploadFile(userDto.getProfileImage());
+        } catch (Exception e) {
+            throw new RuntimeException("Error uploading file");
+        }
+
+        user.setProfileImage(url);
 
         User savedUser = userRepo.save(user);
 

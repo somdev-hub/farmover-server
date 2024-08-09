@@ -12,6 +12,8 @@ import com.farmover.server.farmover.payloads.request.ArticleRequest;
 public interface ArticleService {
     void addArticle(String userEmail, ArticleRequest article) throws IOException;
 
+    void editArticle(Integer id, ArticleRequest article) throws IOException;
+
     List<ArticleDto> getArticleByAuthor(String ownerEmail);
 
     ArticleDto getArticleByid(Integer id, String email);

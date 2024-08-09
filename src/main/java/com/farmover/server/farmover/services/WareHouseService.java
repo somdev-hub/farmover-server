@@ -20,6 +20,8 @@ public interface WareHouseService {
 
     void addWareHouse(String email, WarehouseRequestDto requestDto) throws IOException;
 
+    void updateWarehouse(String email, WarehouseRequestDto requestDto) throws IOException;
+
     void updateWareHouse(Warehouse wh, Integer id);
 
     WareHouseDto getWarehouseByOwner(String email);

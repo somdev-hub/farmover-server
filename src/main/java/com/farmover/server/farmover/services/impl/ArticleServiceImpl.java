@@ -290,4 +290,50 @@ public class ArticleServiceImpl implements ArticleService {
         repo.save(article);
     }
 
+    @Override
+    public void editArticle(Integer id, ArticleRequest article) throws IOException {
+        ArticleDetail articleDetail = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("article", "id", id.toString()));
+
+        if (article.getThumbnail() != null) {
+            if (articleDetail.getThumbnail() != null) {
+                Boolean isThumbnailDeleted = s3ServiceImpl.deleteFile(articleDetail.getThumbnail());
+                if (!isThumbnailDeleted) {
+                    throw new RuntimeException("Error deleting thumbnail");
+                }
+            }
+
+            String thumbnail = s3ServiceImpl.uploadFile(article.getThumbnail());
+            articleDetail.setThumbnail(thumbnail);
+        }
+
+        if (article.getContent() != null) {
+            if (articleDetail.getContent() != null) {
+                Boolean isContentDeleted = s3ServiceImpl.deleteFile(articleDetail.getContent());
+                if (!isContentDeleted) {
+                    throw new RuntimeException("Error deleting content");
+                }
+            }
+
+            String content = s3ServiceImpl.uploadRichText(article.getContent());
+            articleDetail.setContent(content);
+        }
+
+        if (article.getTags() != null) {
+            List<String> tags = objectMapper.readValue(article.getTags(), new TypeReference<List<String>>() {
+            });
+            articleDetail.setTags(tags);
+        }
+
+        if (article.getSubHeading() != null) {
+            articleDetail.setSubHeading(article.getSubHeading());
+        }
+
+        if (article.getTitle() != null) {
+            articleDetail.setTitle(article.getTitle());
+        }
+
+        repo.save(articleDetail);
+    }
+
 }

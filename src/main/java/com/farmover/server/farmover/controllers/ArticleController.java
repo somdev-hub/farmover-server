@@ -1,5 +1,6 @@
 package com.farmover.server.farmover.controllers;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +93,12 @@ public class ArticleController {
             @RequestBody CommentArticleRequest comment) {
         serviceImp.addCommentToArticle(id, comment.getEmail(), comment.getComment());
         return new ResponseEntity<String>("", HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> editArticle(@PathVariable Integer id, @ModelAttribute ArticleRequest dto) throws IOException {
+        serviceImp.editArticle(id, dto);
+        return new ResponseEntity<String>("Article updated", HttpStatus.ACCEPTED);
     }
 
 }

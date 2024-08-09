@@ -84,9 +84,6 @@ public class ProductionController {
     @PostMapping("/add-service")
     public ResponseEntity<?> addServiceToProduction(@RequestBody AddServiceToProductionDto addServiceToProductionDto) {
         productionService.addServiceToProduction(addServiceToProductionDto);
-
-        // System.out.println(addServiceToProductionDto.getProductionToken());
-
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -94,7 +91,6 @@ public class ProductionController {
     public ResponseEntity<String> addToWarehouse(@RequestBody AddProductionToWarehouseDto dto,
             @RequestParam String email) {
         productionService.addProductionToWarehouse(dto, email);
-
         return new ResponseEntity<String>(HttpStatus.CREATED);
     }
 
