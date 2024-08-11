@@ -268,8 +268,7 @@ public class WareHouseServiceImpl implements WareHouseService {
 
         warehouse.setPin(requestDto.getPin());
         warehouse.setWarehouseDetails(requestDto.getWarehouseDetails());
-
-        // Clear existing facilities
+        warehouse.setAddress(requestDto.getAddress());
         warehouse.getFacilities().clear();
         wareHouseRepo.save(warehouse);
 

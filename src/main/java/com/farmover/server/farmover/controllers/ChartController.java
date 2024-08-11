@@ -60,6 +60,12 @@ public class ChartController {
                 HttpStatus.OK);
     }
 
+    @GetMapping("/each-service-usage")
+    @PreAuthorize("hasRole('SERVICE_PROVIDER')")
+    public ResponseEntity<Map<String, Double>> getEachServiceUsage(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Double>>(chartServices.getServiceRevenues(email), HttpStatus.OK);
+    }
+
     @GetMapping("/content-creator/views-by-roles")
     public ResponseEntity<Map<String, Map<String, Integer>>> getViewsByRoles(@RequestParam String email) {
         return new ResponseEntity<Map<String, Map<String, Integer>>>(chartServices.getViewCountByRoles(email),
@@ -81,6 +87,12 @@ public class ChartController {
     @GetMapping("/company-purchases")
     public ResponseEntity<Map<String, Map<String, Double>>> getCompanyPurchases(@RequestParam String email) {
         return new ResponseEntity<Map<String, Map<String, Double>>>(chartServices.getCompanyMonthlyPurchases(email),
+                HttpStatus.OK);
+    }
+
+    @GetMapping("/company-quantity")
+    public ResponseEntity<Map<String, Map<String, Double>>> getCompanyQuantity(@RequestParam String email) {
+        return new ResponseEntity<Map<String, Map<String, Double>>>(chartServices.getCompanyMonthlyQuantity(email),
                 HttpStatus.OK);
     }
 

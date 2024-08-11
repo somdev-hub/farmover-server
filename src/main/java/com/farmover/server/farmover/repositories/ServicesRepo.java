@@ -15,4 +15,5 @@ public interface ServicesRepo extends JpaRepository<Services, Integer> {
     Optional<Services> findByServiceType(String serviceType);
 
     Optional<List<Services>> findByOwner(User owner);
+
 }

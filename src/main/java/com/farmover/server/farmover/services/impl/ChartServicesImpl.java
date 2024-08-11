@@ -16,6 +16,7 @@ import com.farmover.server.farmover.entities.CommentArticle;
 import com.farmover.server.farmover.entities.CommentVideo;
 import com.farmover.server.farmover.entities.Company;
 import com.farmover.server.farmover.entities.CompanyPurchases;
+import com.farmover.server.farmover.entities.ContractDetails;
 import com.farmover.server.farmover.entities.DownVoteArticle;
 import com.farmover.server.farmover.entities.DownVoteVideo;
 import com.farmover.server.farmover.entities.Production;
@@ -33,6 +34,7 @@ import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.repositories.ArticleRepo;
 import com.farmover.server.farmover.repositories.CompanyPurchasesRepo;
 import com.farmover.server.farmover.repositories.CompanyRepo;
+import com.farmover.server.farmover.repositories.ContractDetailsRepo;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.ServicesRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
@@ -59,6 +61,9 @@ public class ChartServicesImpl {
 
     @Autowired
     private ServicesRepo servicesRepo;
+
+    @Autowired
+    private ContractDetailsRepo contractDetailsRepo;
 
     @Autowired
     private CompanyRepo companyRepo;
@@ -217,6 +222,32 @@ public class ChartServicesImpl {
         });
 
         return revenueMap;
+    }
+
+    public Map<String, Double> getServiceRevenues(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        List<Services> services = servicesRepo.findByOwner(user).orElseThrow(() -> {
+            throw new ResourceNotFoundException("Service", "owner", user.getEmail());
+        });
+
+        Map<String, Double> serviceRevenues = new HashMap<>();
+
+        services.forEach(service -> {
+            List<ContractDetails> contractDetails = contractDetailsRepo.findByServiceAndCurrentMonth(service)
+                    .orElseThrow(() -> {
+                        throw new ResourceNotFoundException("contract", "service", service.getId().toString());
+                    });
+
+            contractDetails.forEach(detail -> {
+                serviceRevenues.merge(service.getServiceName(), detail.getPrice(), Double::sum);
+            });
+
+        });
+
+        return serviceRevenues;
+
     }
 
     public Map<String, Map<String, Integer>> getViewCountByRoles(String email) {
@@ -475,5 +506,33 @@ public class ChartServicesImpl {
         });
 
         return companyMonthlyPurchases;
+    }
+
+    public Map<String, Map<String, Double>> getCompanyMonthlyQuantity(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
+
+        Company company = companyRepo.findByManager(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "owner", user.getEmail()));
+
+        List<CompanyPurchases> purchases = companyPurchasesRepo.findByCompany(company);
+
+        Map<String, Map<String, Double>> companyMonthlyQuantity = new HashMap<>();
+
+        purchases.forEach(purchase -> {
+            int month = purchase.getPurchaseDate().getMonthValue();
+            String monthName = MONTHS[month - 1];
+
+            if (companyMonthlyQuantity.containsKey(monthName)) {
+                Map<String, Double> purchaseMap = companyMonthlyQuantity.get(monthName);
+                purchaseMap.merge(purchase.getCrop().toString(), purchase.getPurchaseQuantity(), Double::sum);
+            } else {
+                Map<String, Double> purchaseMap = new HashMap<>();
+                purchaseMap.put(purchase.getCrop().toString(), purchase.getPurchaseQuantity());
+                companyMonthlyQuantity.put(monthName, purchaseMap);
+            }
+        });
+
+        return companyMonthlyQuantity;
     }
 }
