@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.ServiceFeatures;
+import com.farmover.server.farmover.entities.ServiceStatus;
 import com.farmover.server.farmover.entities.Services;
 import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
@@ -174,12 +175,26 @@ public class ServicesServiceImpl implements ServicesService {
         List<Services> services = servicesRepo.findByOwner(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Services", "owner", email));
 
-        List<ContractDetailsDto> allContractDetails = services.stream()
-                .flatMap(service -> service.getContractDetails().stream())
-                .map(contractDetails -> {
-                    ContractDetailsDto contractDetailsDto = modelMapper.map(contractDetails, ContractDetailsDto.class);
-                    return contractDetailsDto;
-                }).toList();
+        List<ContractDetailsDto> allContractDetails = new ArrayList<>();
+
+        services.stream().forEach(service -> {
+            service.getContractDetails().stream().forEach(detail -> {
+                ContractDetailsDto cd = new ContractDetailsDto();
+                cd.setId(detail.getId());
+                cd.setContractSignDate(detail.getContractSignDate());
+                cd.setDuration(detail.getDuration());
+                cd.setPrice(detail.getPrice());
+                cd.setFarmer(detail.getFarmer());
+                cd.setAddress(detail.getAddress());
+                cd.setPhone(detail.getPhone());
+
+                cd.setService(service.getServiceName());
+                cd.setServiceStatus(service.getStatus().toString());
+
+                allContractDetails.add(cd);
+            });
+
+        });
 
         return allContractDetails;
     }
@@ -233,6 +248,16 @@ public class ServicesServiceImpl implements ServicesService {
                 .orElseThrow(() -> new ResourceNotFoundException("Services", "owner", email));
 
         return services.stream().collect(Collectors.toMap(Services::getId, Services::getServiceName));
+    }
+
+    @Override
+    public void updateServiceStatus(Integer id, String status) {
+        Services service = servicesRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Service", "id", Integer.toString(id)));
+
+        service.setStatus(ServiceStatus.valueOf(status));
+
+        servicesRepo.save(service);
     }
 
 }

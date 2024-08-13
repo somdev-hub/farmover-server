@@ -11,6 +11,8 @@ public class ContractDetailsDto {
 
     private LocalDate contractSignDate;
 
+    private String service;
+
     private Integer duration;
 
     private Double price;
@@ -21,6 +23,6 @@ public class ContractDetailsDto {
 
     private String phone;
 
-    private String status;
+    private String serviceStatus;
 
 }

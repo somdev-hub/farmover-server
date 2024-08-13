@@ -22,6 +22,7 @@ import com.farmover.server.farmover.entities.ContractDetails;
 import com.farmover.server.farmover.entities.CropActivity;
 import com.farmover.server.farmover.entities.Crops;
 import com.farmover.server.farmover.entities.Production;
+import com.farmover.server.farmover.entities.ServiceStatus;
 import com.farmover.server.farmover.entities.Services;
 import com.farmover.server.farmover.entities.Storage;
 import com.farmover.server.farmover.entities.StorageBookings;
@@ -262,6 +263,7 @@ public class ProductionServiceImpl implements ProductionService {
                 contractDetail.setProductionToken(dto.getProductionToken());
 
                 service.getContractDetails().add(contractDetail);
+                service.setStatus(ServiceStatus.COMMISSIONED);
 
                 if (!production.getServices().contains(service)) {
                         production.getServices().add(service);

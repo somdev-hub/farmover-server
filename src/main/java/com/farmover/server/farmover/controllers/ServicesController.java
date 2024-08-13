@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.farmover.server.farmover.payloads.ContractDetailsDto;
 import com.farmover.server.farmover.payloads.ServicesDashboardDto;
 import com.farmover.server.farmover.payloads.ServicesDto;
+import com.farmover.server.farmover.payloads.request.ServiceStatusRequestDto;
 import com.farmover.server.farmover.payloads.request.ServicesRequestDto;
 import com.farmover.server.farmover.services.impl.ServicesServiceImpl;
 
@@ -77,6 +79,12 @@ public class ServicesController {
             throws NumberFormatException, IOException {
 
         return new ResponseEntity<ServicesDto>(servicesService.updateService(dto, id), HttpStatus.OK);
+    }
+
+    @PostMapping("status/{id}")
+    public ResponseEntity<String> updateStatus(@PathVariable Integer id, @RequestBody ServiceStatusRequestDto status) {
+        servicesService.updateServiceStatus(id, status.getStatus());
+        return new ResponseEntity<String>("Service status updated successfully", HttpStatus.OK);
     }
 
 }

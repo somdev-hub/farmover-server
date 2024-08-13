@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.farmover.server.farmover.entities.ServiceStatus;
 import com.farmover.server.farmover.payloads.ContractDetailsDto;
 import com.farmover.server.farmover.payloads.ServicesDashboardDto;
 import com.farmover.server.farmover.payloads.ServicesDto;
@@ -28,5 +29,7 @@ public interface ServicesService {
     public List<ServicesDashboardDto> getAvailableServices();
 
     public List<ContractDetailsDto> getContractDetails(String email);
+
+    public void updateServiceStatus(Integer id, String status);
 
 }

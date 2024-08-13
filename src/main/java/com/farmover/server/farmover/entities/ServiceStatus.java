@@ -5,6 +5,7 @@ public enum ServiceStatus {
     INACTIVE,
     REPAIRING,
     MAINTENANCE,
+    COMMISSIONED,
     DECOMMISSIONED,
     OPERATING,
 
