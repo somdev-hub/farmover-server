@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import com.farmover.server.farmover.entities.ContractDetails;
 import com.farmover.server.farmover.entities.CropActivity;
 import com.farmover.server.farmover.entities.Crops;
+import com.farmover.server.farmover.entities.PaymentSessionId;
 import com.farmover.server.farmover.entities.Production;
 import com.farmover.server.farmover.entities.ServiceStatus;
 import com.farmover.server.farmover.entities.Services;
@@ -39,8 +41,10 @@ import com.farmover.server.farmover.payloads.records.ProductionServicesUsageReco
 import com.farmover.server.farmover.payloads.records.ProductionWarehouseRecord;
 import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
+import com.farmover.server.farmover.payloads.request.AddServicesToProductionDto;
 import com.farmover.server.farmover.repositories.ContractDetailsRepo;
 import com.farmover.server.farmover.repositories.CropActivityRepo;
+import com.farmover.server.farmover.repositories.PaymentSessionIdRepo;
 import com.farmover.server.farmover.repositories.ProductionRepo;
 import com.farmover.server.farmover.repositories.ServicesRepo;
 import com.farmover.server.farmover.repositories.StorageBookingsRepo;
@@ -80,6 +84,9 @@ public class ProductionServiceImpl implements ProductionService {
 
         @Autowired
         private StorageBookingsRepo storageBookingsRepo;
+
+        @Autowired
+        private PaymentSessionIdRepo paymentSessionIdRepo;
 
         @Override
         public ProductionDto addProduction(ProductionDto productionDto, String email) {
@@ -214,9 +221,66 @@ public class ProductionServiceImpl implements ProductionService {
                 return cropWiseProductions;
         }
 
+        @Transactional
+        public void addServicesToProduction(AddServicesToProductionDto dto) {
+                PaymentSessionId paymentId = paymentSessionIdRepo.findBySessionId(dto.getSessionId())
+                                .orElseGet(() -> {
+                                        PaymentSessionId newPaymentId = new PaymentSessionId();
+                                        newPaymentId.setSessionId(dto.getSessionId());
+                                        newPaymentId.setUsed(false);
+                                        newPaymentId.setStatus("PAID");
+                                        paymentSessionIdRepo.save(newPaymentId);
+                                        return newPaymentId;
+                                });
+
+                if (paymentId.getUsed()) {
+                        throw new RuntimeException("Session Id already used");
+                }
+
+                paymentId.setUsed(true); // Set used to true after the transaction
+                paymentId.setUsedDate(LocalDate.now());
+                paymentSessionIdRepo.save(paymentId);
+
+                // Use a stream to iterate over serviceIds and durations
+                IntStream.range(0, dto.getServiceIds().size()).forEach(i -> {
+                        AddServiceToProductionDto addServiceToProduction = new AddServiceToProductionDto();
+                        addServiceToProduction.setServiceId(dto.getServiceIds().get(i));
+                        addServiceToProduction.setDuration(dto.getDurations().get(i));
+                        addServiceToProduction.setEmail(dto.getEmail());
+                        addServiceToProduction.setProductionToken(dto.getProductionToken());
+
+                        addServiceToProductionHandler(addServiceToProduction);
+                });
+        }
+
         @Override
         @Transactional
         public void addServiceToProduction(AddServiceToProductionDto dto) {
+
+                PaymentSessionId paymentId = paymentSessionIdRepo.findBySessionId(dto.getSessionId())
+                                .orElseGet(() -> {
+                                        PaymentSessionId newPaymentId = new PaymentSessionId();
+                                        newPaymentId.setSessionId(dto.getSessionId());
+                                        newPaymentId.setUsed(false);
+                                        newPaymentId.setStatus("PAID");
+                                        paymentSessionIdRepo.save(newPaymentId);
+                                        return newPaymentId;
+                                });
+
+                if (paymentId.getUsed()) {
+                        throw new RuntimeException("Session Id already used");
+                }
+
+                paymentId.setUsed(true); // Set used to true after the transaction
+                paymentId.setUsedDate(LocalDate.now());
+
+                paymentSessionIdRepo.save(paymentId);
+
+                addServiceToProductionHandler(dto);
+
+        }
+
+        private void addServiceToProductionHandler(AddServiceToProductionDto dto) {
                 Services service = servicesRepo.findById(dto.getServiceId())
                                 .orElseThrow(() -> new ResourceNotFoundException("Service", "serviceId",
                                                 dto.getServiceId().toString()));

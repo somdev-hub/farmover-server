@@ -16,4 +16,6 @@ public interface ContractDetailsRepo extends JpaRepository<ContractDetails, Inte
     @Query("SELECT ws FROM ContractDetails ws WHERE ws.service = :service  AND MONTH(ws.contractSignDate) = MONTH(CURRENT_DATE) AND YEAR(ws.contractSignDate) = YEAR(CURRENT_DATE)")
     Optional<List<ContractDetails>> findByServiceAndCurrentMonth(@Param("service") Services service);
 
+    Optional<ContractDetails> findByProductionToken(Integer productionToken);
+
 }

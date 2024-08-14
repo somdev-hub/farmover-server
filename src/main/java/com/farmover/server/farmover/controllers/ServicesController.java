@@ -83,7 +83,7 @@ public class ServicesController {
 
     @PostMapping("status/{id}")
     public ResponseEntity<String> updateStatus(@PathVariable Integer id, @RequestBody ServiceStatusRequestDto status) {
-        servicesService.updateServiceStatus(id, status.getStatus());
+        servicesService.updateServiceStatus(id, status.getStatus(), status.getProductionToken());
         return new ResponseEntity<String>("Service status updated successfully", HttpStatus.OK);
     }
 

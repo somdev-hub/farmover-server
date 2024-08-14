@@ -1,6 +1,7 @@
 package com.farmover.server.farmover.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,7 +26,10 @@ import com.farmover.server.farmover.payloads.records.ProductionServicesUsageReco
 import com.farmover.server.farmover.payloads.records.ProductionWarehouseRecord;
 import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
+import com.farmover.server.farmover.payloads.request.AddServicesToProductionDto;
+import com.farmover.server.farmover.services.impl.PaymentServiceImpl;
 import com.farmover.server.farmover.services.impl.ProductionServiceImpl;
+import com.stripe.exception.StripeException;
 
 @RestController
 @CrossOrigin
@@ -34,6 +38,9 @@ public class ProductionController {
 
     @Autowired
     private ProductionServiceImpl productionService;
+
+    @Autowired
+    private PaymentServiceImpl paymentService;
 
     @PostMapping("/{email}")
     public ResponseEntity<ProductionDto> addProduction(@RequestBody ProductionDto productionDto,
@@ -82,9 +89,30 @@ public class ProductionController {
     }
 
     @PostMapping("/add-service")
-    public ResponseEntity<?> addServiceToProduction(@RequestBody AddServiceToProductionDto addServiceToProductionDto) {
-        productionService.addServiceToProduction(addServiceToProductionDto);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<?> addServiceToProduction(@RequestBody AddServiceToProductionDto addServiceToProductionDto)
+            throws StripeException {
+        Map<String, Object> paymentVerification = paymentService
+                .verifyPayment(addServiceToProductionDto.getSessionId());
+        if (paymentVerification.get("paymentStatus").equals("paid")) {
+            productionService.addServiceToProduction(addServiceToProductionDto);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+    }
+
+    @PostMapping("/add-services")
+    public ResponseEntity<?> addServicesToProduction(@RequestBody AddServicesToProductionDto addServicesToProductionDto)
+            throws StripeException {
+
+        Map<String, Object> paymentVerification = paymentService
+                .verifyPayment(addServicesToProductionDto.getSessionId());
+
+        if (paymentVerification.get("paymentStatus").equals("paid")) {
+            productionService.addServicesToProduction(addServicesToProductionDto);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     @PostMapping("/add-warehouse")

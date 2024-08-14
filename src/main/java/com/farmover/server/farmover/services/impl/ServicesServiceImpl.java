@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.farmover.server.farmover.entities.ContractDetails;
 import com.farmover.server.farmover.entities.ServiceFeatures;
 import com.farmover.server.farmover.entities.ServiceStatus;
 import com.farmover.server.farmover.entities.Services;
@@ -20,6 +21,7 @@ import com.farmover.server.farmover.payloads.ContractDetailsDto;
 import com.farmover.server.farmover.payloads.ServicesDashboardDto;
 import com.farmover.server.farmover.payloads.ServicesDto;
 import com.farmover.server.farmover.payloads.request.ServicesRequestDto;
+import com.farmover.server.farmover.repositories.ContractDetailsRepo;
 import com.farmover.server.farmover.repositories.ServicesRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
 import com.farmover.server.farmover.services.ServicesService;
@@ -40,6 +42,9 @@ public class ServicesServiceImpl implements ServicesService {
 
     @Autowired
     private UserRepo userRepo;
+
+    @Autowired
+    private ContractDetailsRepo contractDetailsRepo;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -187,7 +192,7 @@ public class ServicesServiceImpl implements ServicesService {
                 cd.setFarmer(detail.getFarmer());
                 cd.setAddress(detail.getAddress());
                 cd.setPhone(detail.getPhone());
-
+                cd.setProductionToken(detail.getProductionToken());
                 cd.setService(service.getServiceName());
                 cd.setServiceStatus(service.getStatus().toString());
 
@@ -251,13 +256,20 @@ public class ServicesServiceImpl implements ServicesService {
     }
 
     @Override
-    public void updateServiceStatus(Integer id, String status) {
+    public void updateServiceStatus(Integer id, String status, Integer productionToken) {
         Services service = servicesRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Service", "id", Integer.toString(id)));
+
+        ContractDetails contractDetail = contractDetailsRepo.findByProductionToken(productionToken)
+                .orElseThrow(() -> new ResourceNotFoundException("ContractDetails", "productionToken",
+                        Integer.toString(productionToken)));
+
+        contractDetail.setStatus("FINISHED");
 
         service.setStatus(ServiceStatus.valueOf(status));
 
         servicesRepo.save(service);
+        contractDetailsRepo.save(contractDetail);
     }
 
 }

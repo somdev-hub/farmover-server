@@ -5,4 +5,6 @@ import lombok.Data;
 @Data
 public class ServiceStatusRequestDto {
     private String status;
+
+    private Integer productionToken;
 }

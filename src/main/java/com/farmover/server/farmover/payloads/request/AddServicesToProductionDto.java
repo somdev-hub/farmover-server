@@ -1,12 +1,19 @@
 package com.farmover.server.farmover.payloads.request;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
-public class AddServiceToProductionDto {
+public class AddServicesToProductionDto {
+
     private Integer productionToken;
-    private Integer serviceId;
+
+    private List<Integer> serviceIds;
+
     private String email;
-    private Integer duration;
+
+    private List<Integer> durations;
+
     private String sessionId;
 }

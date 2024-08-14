@@ -25,4 +25,6 @@ public class ContractDetailsDto {
 
     private String serviceStatus;
 
+    private Integer productionToken;
+
 }
