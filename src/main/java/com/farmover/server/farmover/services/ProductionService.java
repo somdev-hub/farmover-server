@@ -23,7 +23,7 @@ public interface ProductionService {
 
     void deleteProduction(Integer token);
 
-    List<ProductionDto> getProductionByFarmer(String email);
+    Page<ProductionDto> getProductionByFarmer(String email, Integer page, Integer size);
 
     List<CropWiseProduction> getCropWiseProduction(String email);
 

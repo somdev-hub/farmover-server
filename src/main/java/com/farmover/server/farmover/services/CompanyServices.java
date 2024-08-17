@@ -13,6 +13,7 @@ import com.farmover.server.farmover.payloads.CompanyWarehouseCardDto;
 import com.farmover.server.farmover.payloads.FarmerItem;
 import com.farmover.server.farmover.payloads.records.AvailableCropWarehouseCard;
 import com.farmover.server.farmover.payloads.records.RegisteredFarmersInfo;
+import com.farmover.server.farmover.payloads.request.CompanyPurchaseDto;
 import com.farmover.server.farmover.payloads.request.CompanyRegisterDto;
 
 public interface CompanyServices {
@@ -29,7 +30,7 @@ public interface CompanyServices {
 
     List<RegisteredFarmersInfo> getRegisteredFarmers(Integer warehouseId);
 
-    void purchaseItems(Map<Integer, Double> productionTokens, String email);
+    void purchaseItems(CompanyPurchaseDto dto, String email);
 
     Map<Crops, List<AvailableCropWarehouseCard>> getWarehousesByAvailableCrops();
 

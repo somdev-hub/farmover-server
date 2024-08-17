@@ -183,19 +183,19 @@ public class ProductionServiceImpl implements ProductionService {
         }
 
         @Override
-        public List<ProductionDto> getProductionByFarmer(String email) {
+        public Page<ProductionDto> getProductionByFarmer(String email, Integer page, Integer size) {
                 User user = userRepo.findByEmail(email)
                                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
 
-                List<Production> productions = productionRepo.findByFarmer(user).orElseThrow(
-                                () -> new ResourceNotFoundException("Production", "farmer email", email));
+                Pageable pageable = PageRequest.of(page, size);
 
-                List<ProductionDto> productionDtos = productions.stream()
-                                .map(production -> modelMapper.map(production, ProductionDto.class))
-                                .toList();
+                Page<Production> productions = productionRepo.findByFarmer(user, pageable)
+                                .orElseThrow(() -> new ResourceNotFoundException("Production", "farmer email", email));
+
+                Page<ProductionDto> productionDtos = productions
+                                .map(production -> modelMapper.map(production, ProductionDto.class));
 
                 return productionDtos;
-
         }
 
         @Override
@@ -356,6 +356,25 @@ public class ProductionServiceImpl implements ProductionService {
         @Override
         @Transactional
         public void addProductionToWarehouse(AddProductionToWarehouseDto dto, String email) {
+                PaymentSessionId paymentId = paymentSessionIdRepo.findBySessionId(dto.getSessionId())
+                                .orElseGet(() -> {
+                                        PaymentSessionId newPaymentId = new PaymentSessionId();
+                                        newPaymentId.setSessionId(dto.getSessionId());
+                                        newPaymentId.setUsed(false);
+                                        newPaymentId.setStatus("PAID");
+                                        paymentSessionIdRepo.save(newPaymentId);
+                                        return newPaymentId;
+                                });
+
+                if (paymentId.getUsed()) {
+                        throw new RuntimeException("Session Id already used");
+                }
+
+                paymentId.setUsed(true); // Set used to true after the transaction
+                paymentId.setUsedDate(LocalDate.now());
+
+                paymentSessionIdRepo.save(paymentId);
+
                 User user = userRepo.findByEmail(email)
                                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
                 Production production = productionRepo.findByToken(dto.getProductionToken()).orElseThrow(
@@ -515,18 +534,16 @@ public class ProductionServiceImpl implements ProductionService {
                         orderOverviews.add(orderOverview);
                 }
 
-                Collections.sort(orderOverviews, new Comparator<OrderOverview>() {
-                        @Override
-                        public int compare(OrderOverview o1, OrderOverview o2) {
-                                return o2.date().compareTo(o1.date());
-                        }
-                });
+                // Sort by full timestamp
+                orderOverviews.sort((o1, o2) -> o2.date().compareTo(o1.date()));
 
-                int start = (int) pageable.getOffset();
+                // Convert the list to a Page object
+                int start = Math.min((int) pageable.getOffset(), orderOverviews.size());
                 int end = Math.min((start + pageable.getPageSize()), orderOverviews.size());
-                List<OrderOverview> pagedOrderOverviews = orderOverviews.subList(start, end);
+                Page<OrderOverview> orderOverviewPage = new PageImpl<>(orderOverviews.subList(start, end), pageable,
+                                orderOverviews.size());
 
-                return new PageImpl<>(pagedOrderOverviews, pageable, orderOverviews.size());
+                return orderOverviewPage;
         }
 
         @Override

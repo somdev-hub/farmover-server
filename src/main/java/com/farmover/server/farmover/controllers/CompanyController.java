@@ -26,8 +26,12 @@ import com.farmover.server.farmover.payloads.CompanyWarehouseCardDto;
 import com.farmover.server.farmover.payloads.FarmerItem;
 import com.farmover.server.farmover.payloads.records.AvailableCropWarehouseCard;
 import com.farmover.server.farmover.payloads.records.RegisteredFarmersInfo;
+import com.farmover.server.farmover.payloads.request.CompanyPurchaseDto;
 import com.farmover.server.farmover.payloads.request.CompanyRegisterDto;
 import com.farmover.server.farmover.services.impl.CompanyServiceImpl;
+import com.farmover.server.farmover.services.impl.PaymentServiceImpl;
+import com.stripe.exception.StripeException;
+
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
@@ -37,6 +41,9 @@ public class CompanyController {
 
     @Autowired
     CompanyServiceImpl companyService;
+
+    @Autowired
+    PaymentServiceImpl paymentService;
 
     @PostMapping(value = "/", consumes = "multipart/form-data")
     public ResponseEntity<CompanyDto> addCompany(@ModelAttribute CompanyRegisterDto dto, @RequestParam String email)
@@ -72,10 +79,14 @@ public class CompanyController {
     }
 
     @PostMapping("/purchase")
-    public ResponseEntity<String> purchaseItems(@RequestBody Map<Integer, Double> productionTokens,
-            @RequestParam String email) {
+    public ResponseEntity<String> purchaseItems(@RequestBody CompanyPurchaseDto dto,
+            @RequestParam String email) throws StripeException {
 
-        companyService.purchaseItems(productionTokens, email);
+        if (isPaymentValid(dto.getSessionId())) {
+
+            companyService.purchaseItems(dto, email);
+            return new ResponseEntity<String>("Purchased", HttpStatus.OK);
+        }
 
         return new ResponseEntity<>("Complete", HttpStatus.OK);
     }
@@ -102,6 +113,11 @@ public class CompanyController {
             throws IOException {
 
         return new ResponseEntity<CompanyDto>(companyService.updateCompany(dto, email), HttpStatus.OK);
+    }
+
+    private Boolean isPaymentValid(String sessionId) throws StripeException {
+        Map<String, Object> paymentVerification = paymentService.verifyPayment(sessionId);
+        return paymentVerification.get("paymentStatus").equals("paid");
     }
 
 }

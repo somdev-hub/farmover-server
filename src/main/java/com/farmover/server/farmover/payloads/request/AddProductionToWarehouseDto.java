@@ -22,4 +22,6 @@ public class AddProductionToWarehouseDto {
     private String minimumUnit;
 
     private Integer productionToken;
+
+    private String sessionId;
 }

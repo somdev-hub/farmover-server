@@ -33,6 +33,7 @@ import com.farmover.server.farmover.payloads.CompanyWarehouseCardDto;
 import com.farmover.server.farmover.payloads.FarmerItem;
 import com.farmover.server.farmover.payloads.records.AvailableCropWarehouseCard;
 import com.farmover.server.farmover.payloads.records.RegisteredFarmersInfo;
+import com.farmover.server.farmover.payloads.request.CompanyPurchaseDto;
 import com.farmover.server.farmover.payloads.request.CompanyRegisterDto;
 import com.farmover.server.farmover.repositories.CompanyRepo;
 import com.farmover.server.farmover.repositories.ProductionRepo;
@@ -180,7 +181,7 @@ public class CompanyServiceImpl implements CompanyServices {
 
     @Override
     @Transactional
-    public void purchaseItems(Map<Integer, Double> productionTokens, String email) {
+    public void purchaseItems(CompanyPurchaseDto dto, String email) {
         User user = userRepo.findByEmail(email).orElseThrow(() -> {
             throw new ResourceNotFoundException("User", "email", email);
         });
@@ -191,7 +192,7 @@ public class CompanyServiceImpl implements CompanyServices {
 
         List<CompanyPurchases> companyPurchases = company.getCompanyPurchases();
 
-        productionTokens.forEach((token, quantity) -> {
+        dto.getProductionTokens().forEach((token, quantity) -> {
             StorageBookings storageBooking = storageBookingsRepo.findStorageBookingsByProductionToken(token)
                     .orElseThrow(() -> {
                         throw new ResourceNotFoundException("StorageBookings", "production token", token.toString());
@@ -224,14 +225,21 @@ public class CompanyServiceImpl implements CompanyServices {
 
             warehouseSales.add(sales);
 
-            storageBooking.setStatus("SOLD");
+            Production production = productionRepo.findByToken(token).orElseThrow(
+                    () -> new ResourceNotFoundException("Production", "production token", token.toString()));
+
+            Double percent = (quantity / production.getQuantity()) * 100.0;
+            if (percent < 100.0) {
+                storageBooking.setStatus(percent + "% SOLD");
+                production.setStatus(percent + "% sold");
+            } else {
+                storageBooking.setStatus("SOLD");
+                production.setStatus("sold");
+            }
             storageBooking.setAvailableQuantity(storageBooking.getAvailableQuantity() - quantity);
 
             storageBooking.getStorage().setAvailableCapacity(
                     storageBooking.getStorage().getAvailableCapacity() + (storageBooking.getBookedWeight() / 1000.0));
-
-            Production production = productionRepo.findByToken(token).orElseThrow(
-                    () -> new ResourceNotFoundException("Production", "production token", token.toString()));
 
             Transactions farmerTransaction = updateTransactions(company.getName(), production.getFarmer().getEmail(),
                     Double.valueOf(storageBooking.getItemPrice() * quantity) * 0.95,
@@ -272,7 +280,7 @@ public class CompanyServiceImpl implements CompanyServices {
     private Transactions updateTransactions(String buyer, String seller, Double amount, String item,
             String type,
             TransactionType transactionType, User user) {
-        System.out.println(amount);
+        // System.out.println(amount);
         Transactions transactions = new Transactions();
         transactions.setAmount(amount);
         transactions.setBuyer(buyer);

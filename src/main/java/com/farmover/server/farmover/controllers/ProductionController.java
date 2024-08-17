@@ -58,11 +58,12 @@ public class ProductionController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<ProductionDto>> getFarmerProductions(@RequestParam String email) {
+    public ResponseEntity<Page<ProductionDto>> getFarmerProductions(@RequestParam String email,
+            @RequestParam Integer page, @RequestParam Integer size) {
 
-        List<ProductionDto> productions = productionService.getProductionByFarmer(email);
+        Page<ProductionDto> productions = productionService.getProductionByFarmer(email, page, size);
 
-        return new ResponseEntity<List<ProductionDto>>(productions, HttpStatus.OK);
+        return new ResponseEntity<Page<ProductionDto>>(productions, HttpStatus.OK);
     }
 
     @GetMapping("/crops")
@@ -91,9 +92,8 @@ public class ProductionController {
     @PostMapping("/add-service")
     public ResponseEntity<?> addServiceToProduction(@RequestBody AddServiceToProductionDto addServiceToProductionDto)
             throws StripeException {
-        Map<String, Object> paymentVerification = paymentService
-                .verifyPayment(addServiceToProductionDto.getSessionId());
-        if (paymentVerification.get("paymentStatus").equals("paid")) {
+
+        if (isPaymentValid(addServiceToProductionDto.getSessionId())) {
             productionService.addServiceToProduction(addServiceToProductionDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         }
@@ -105,10 +105,7 @@ public class ProductionController {
     public ResponseEntity<?> addServicesToProduction(@RequestBody AddServicesToProductionDto addServicesToProductionDto)
             throws StripeException {
 
-        Map<String, Object> paymentVerification = paymentService
-                .verifyPayment(addServicesToProductionDto.getSessionId());
-
-        if (paymentVerification.get("paymentStatus").equals("paid")) {
+        if (isPaymentValid(addServicesToProductionDto.getSessionId())) {
             productionService.addServicesToProduction(addServicesToProductionDto);
             return new ResponseEntity<>(HttpStatus.CREATED);
         }
@@ -117,9 +114,14 @@ public class ProductionController {
 
     @PostMapping("/add-warehouse")
     public ResponseEntity<String> addToWarehouse(@RequestBody AddProductionToWarehouseDto dto,
-            @RequestParam String email) {
-        productionService.addProductionToWarehouse(dto, email);
-        return new ResponseEntity<String>(HttpStatus.CREATED);
+            @RequestParam String email) throws StripeException {
+
+        if (isPaymentValid(dto.getSessionId())) {
+            productionService.addProductionToWarehouse(dto, email);
+            return new ResponseEntity<String>(HttpStatus.CREATED);
+        }
+        return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+
     }
 
     @GetMapping("/sales-report")
@@ -145,6 +147,11 @@ public class ProductionController {
     public ResponseEntity<List<ProductionWarehouseRecord>> getUsedWarehouses(@RequestParam String email) {
         return new ResponseEntity<List<ProductionWarehouseRecord>>(productionService.getUsedWarehouses(email),
                 HttpStatus.OK);
+    }
+
+    private Boolean isPaymentValid(String sessionId) throws StripeException {
+        Map<String, Object> paymentVerification = paymentService.verifyPayment(sessionId);
+        return paymentVerification.get("paymentStatus").equals("paid");
     }
 
 }

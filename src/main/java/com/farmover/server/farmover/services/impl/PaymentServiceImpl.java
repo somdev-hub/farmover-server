@@ -11,11 +11,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.Services;
+import com.farmover.server.farmover.entities.Storage;
+import com.farmover.server.farmover.entities.StorageBookings;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
+import com.farmover.server.farmover.payloads.request.AddProductionToWarehouseDto;
 import com.farmover.server.farmover.payloads.request.AddServiceToProductionDto;
 import com.farmover.server.farmover.payloads.request.AddServicesToProductionDto;
+import com.farmover.server.farmover.payloads.request.CompanyPurchaseDto;
 import com.farmover.server.farmover.repositories.ServicesRepo;
+import com.farmover.server.farmover.repositories.StorageBookingsRepo;
 import com.farmover.server.farmover.repositories.UserRepo;
+import com.farmover.server.farmover.repositories.WareHouseRepo;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
@@ -35,7 +41,13 @@ public class PaymentServiceImpl {
         ProductionServiceImpl productionService;
 
         @Autowired
+        private WareHouseRepo wareHouseRepo;
+
+        @Autowired
         private ServicesRepo servicesRepo;
+
+        @Autowired
+        private StorageBookingsRepo storageBookingsRepo;
 
         public PaymentIntent createPaymentIntent(Map<String, Object> paymentParams) throws StripeException {
                 return PaymentIntent.create(paymentParams);
@@ -118,8 +130,8 @@ public class PaymentServiceImpl {
                 }
 
                 List<String> serviceIdStrings = checkoutRequest.getServiceIds().stream()
-                    .map(String::valueOf)
-                    .collect(Collectors.toList());
+                                .map(String::valueOf)
+                                .collect(Collectors.toList());
                 String serviceIds = String.join(",", serviceIdStrings);
                 String durations = checkoutRequest.getDurations().stream()
                                 .map(String::valueOf)
@@ -162,13 +174,128 @@ public class PaymentServiceImpl {
                 return responseData;
         }
 
+        public Map<String, String> checkoutPaymentForWarehouse(AddProductionToWarehouseDto dto) throws StripeException {
+                Stripe.apiKey = stripeApiKey;
+
+                Storage storage = wareHouseRepo.findById(dto.getWarehouseId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Warehouse", "id",
+                                                dto.getWarehouseId().toString()))
+                                .getStorages().stream()
+                                .filter(s -> s.getStorageType().equals(dto.getStorageType()))
+                                .findFirst()
+                                .orElseThrow(() -> new ResourceNotFoundException("Storage", "storage type",
+                                                dto.getStorageType().toString()));
+
+                SessionCreateParams params = SessionCreateParams.builder()
+                                .setMode(SessionCreateParams.Mode.PAYMENT)
+                                .setSuccessUrl("http://localhost:5173/farmer/payment/success?session_id={CHECKOUT_SESSION_ID}&type=warehouse&Id="
+                                                + dto.getWarehouseId() + "&storageType="
+                                                + dto.getStorageType()
+                                                + "&weight="
+                                                + dto.getWeight()
+                                                + "&duration="
+                                                + dto.getDuration()
+                                                + "&markForSale="
+                                                + dto.getMarkForSale()
+                                                + "&minimumPrice="
+                                                + dto.getMinimumPrice()
+                                                + "&minimumUnit="
+                                                + dto.getMinimumUnit()
+                                                + "&productionToken="
+                                                + dto.getProductionToken())
+                                .setCancelUrl("http://localhost:5173/cancel")
+                                .setShippingAddressCollection(SessionCreateParams.ShippingAddressCollection.builder()
+                                                .addAllowedCountry(
+                                                                SessionCreateParams.ShippingAddressCollection.AllowedCountry.IN)
+                                                .build())
+
+                                .addLineItem(
+                                                SessionCreateParams.LineItem.builder()
+                                                                .setQuantity(1l)
+                                                                .setPriceData(SessionCreateParams.LineItem.PriceData
+                                                                                .builder()
+                                                                                .setCurrency("INR")
+
+                                                                                .setUnitAmount((long) (dto.getWeight()
+                                                                                                * storage.getPricePerKg()
+                                                                                                * 100))
+                                                                                .setProductData(SessionCreateParams.LineItem.PriceData.ProductData
+                                                                                                .builder()
+                                                                                                .setName(storage.getWarehouse()
+                                                                                                                .getName())
+                                                                                                .build())
+                                                                                .build())
+                                                                .build())
+                                .build();
+
+                Session session = Session.create(params);
+
+                Map<String, String> responseData = new HashMap<>();
+                responseData.put("sessionId", session.getId());
+
+                return responseData;
+        }
+
+        public Map<String, String> checkoutPaymentForCompanies(CompanyPurchaseDto dto) throws StripeException {
+                Stripe.apiKey = stripeApiKey;
+
+                Long price = 0L;
+                String names = "";
+                for (Map.Entry<Integer, Double> entry : dto.getProductionTokens().entrySet()) {
+                        Integer token = entry.getKey();
+                        Double quantity = entry.getValue();
+
+                        StorageBookings booking = storageBookingsRepo.findStorageBookingsByProductionToken(token)
+                                        .orElseThrow(() -> new ResourceNotFoundException("Storage Booking",
+                                                        "production token", token.toString()));
+
+                        price += (long) (quantity * booking.getItemPrice());
+                        names += booking.getCropName() + ", ";
+                }
+
+                SessionCreateParams params = SessionCreateParams.builder()
+                                .setMode(SessionCreateParams.Mode.PAYMENT)
+                                .setSuccessUrl("http://localhost:5173/company/payment/success?session_id={CHECKOUT_SESSION_ID}&type=company&productionTokens="
+                                                + dto.getProductionTokens().keySet().stream().map(String::valueOf)
+                                                                .collect(Collectors.joining(","))
+                                                + "&quantities="
+                                                + dto.getProductionTokens().values().stream().map(String::valueOf)
+                                                                .collect(Collectors.joining(",")))
+                                .setCancelUrl("http://localhost:5173/company/payment/failure")
+                                .setShippingAddressCollection(SessionCreateParams.ShippingAddressCollection.builder()
+                                                .addAllowedCountry(
+                                                                SessionCreateParams.ShippingAddressCollection.AllowedCountry.IN)
+                                                .build())
+
+                                .addLineItem(
+                                                SessionCreateParams.LineItem.builder()
+                                                                .setQuantity(1l)
+                                                                .setPriceData(SessionCreateParams.LineItem.PriceData
+                                                                                .builder()
+                                                                                .setCurrency("INR")
+
+                                                                                .setUnitAmount(price * 100)
+                                                                                .setProductData(SessionCreateParams.LineItem.PriceData.ProductData
+                                                                                                .builder()
+                                                                                                .setName(names)
+                                                                                                .build())
+                                                                                .build())
+                                                                .build())
+                                .build();
+
+                Session session = Session.create(params);
+
+                Map<String, String> responseData = new HashMap<>();
+                responseData.put("sessionId", session.getId());
+
+                return responseData;
+        }
+
         public Map<String, Object> verifyPayment(String sessionId) throws StripeException {
                 Stripe.apiKey = stripeApiKey;
 
-                // Fetch the session details from Stripe
                 Session session = Session.retrieve(sessionId);
 
-                // Prepare the response data
                 Map<String, Object> responseData = new HashMap<>();
                 responseData.put("paymentStatus", session.getPaymentStatus());
                 responseData.put("sessionId", session.getId());

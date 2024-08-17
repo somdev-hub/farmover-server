@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -56,22 +58,31 @@ public class AuthServiceImpl {
     }
 
     public AuthenticationResponse authenticate(LoginRequest request) {
-        // UserDto userDto = userServiceImpl.getUserByEmail(request.getEmail());
-        // userDto.setPassword(request.getPassword());
-        User user = modelMapper.map(request, User.class);
+        try {
+            // Map the request to a User object
+            User user = modelMapper.map(request, User.class);
 
-        authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+            // Attempt authentication
+            authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
-        User byUsername = userRepo.findByEmail(user.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("user", "username", user.getUsername()));
+            // Retrieve the user from the repository
+            User byUsername = userRepo.findByEmail(user.getUsername())
+                    .orElseThrow(() -> new ResourceNotFoundException("user", "username", user.getUsername()));
 
-        String token = jwtService.generateToken(byUsername);
+            // Generate JWT token
+            String token = jwtService.generateToken(byUsername);
 
-        return new AuthenticationResponse(
-                token,
-                byUsername.getEmail(),
-                byUsername.getRole().name());
+            // Return successful authentication response
+            return new AuthenticationResponse(
+                    token,
+                    byUsername.getEmail(),
+                    byUsername.getRole().name());
+
+        } catch (AuthenticationException e) {
+            // Handle authentication failure
+            throw new BadCredentialsException("Invalid username or password");
+        }
     }
 
     public UserDto getUserByEmail(String email) {
