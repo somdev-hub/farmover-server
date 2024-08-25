@@ -1,0 +1,65 @@
+package com.farmover.server.farmover.entities;
+
+import java.sql.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Data;
+
+@Entity
+@Table(name = "article")
+@Data
+public class ArticleDetail {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @ManyToOne
+    @JsonIgnoreProperties("articleAuthored")
+    private User author;
+
+    private String title;
+
+    @Column(length = 500)
+    private List<String> tags;
+
+    private String subHeading;
+
+    private String content;
+
+    private String thumbnail;
+
+    private Date date;
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<UpVoteArticle> upVoteArticle;
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DownVoteArticle> downVoteArticle;
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CommentArticle> articleComment;
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ArticleViews> articleViews;
+
+    private Integer upCount = 0;
+
+    private Integer downCount = 0;
+
+    private Integer commentCount = 0;
+
+    private Integer viewCount = 0;
+}

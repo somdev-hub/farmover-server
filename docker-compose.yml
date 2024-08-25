@@ -1,0 +1,24 @@
+services:
+  mysqldb:
+    image: 'mysql:latest'
+    environment:
+      - MYSQL_ROOT_PASSWORD=gou
+    ports:
+      - 3306:3306
+    container_name: "mysql"
+    healthcheck:
+      test: ["CMD", "mysqladmin","ping","-h","localhost"]
+      timeout: 10s
+      retries: 10
+
+   
+
+  farmbackend:
+    image: 'farm'
+    container_name: 'farm1'
+    ports:
+      - 9090:9090
+    depends_on:
+      mysqldb:
+       condition : service_healthy 
+
