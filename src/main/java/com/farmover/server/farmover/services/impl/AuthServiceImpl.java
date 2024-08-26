@@ -1,9 +1,13 @@
 package com.farmover.server.farmover.services.impl;
 
+import java.util.ArrayList;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +15,8 @@ import com.farmover.server.farmover.entities.User;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.AuthenticationResponse;
 import com.farmover.server.farmover.payloads.UserDto;
+import com.farmover.server.farmover.payloads.request.LoginRequest;
+import com.farmover.server.farmover.payloads.request.UserRequestDto;
 import com.farmover.server.farmover.repositories.UserRepo;
 
 import lombok.Data;
@@ -28,8 +34,10 @@ public class AuthServiceImpl {
     private AuthenticationManager authenticationManager;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    UserServiceImpl userServiceImpl;
 
-    public AuthenticationResponse register(UserDto userDto) {
+    public AuthenticationResponse register(UserRequestDto userDto) {
 
         User user = modelMapper.map(userDto, User.class);
 
@@ -40,6 +48,8 @@ public class AuthServiceImpl {
         user.setAddress(userDto.getAddress());
         user.setRole(userDto.getRole());
 
+        user.setTransactions(new ArrayList<>());
+
         User savedUser = userRepo.save(user);
 
         String token = jwtService.generateToken(savedUser);
@@ -47,21 +57,39 @@ public class AuthServiceImpl {
         return new AuthenticationResponse(token, savedUser.getEmail(), savedUser.getRole().name());
     }
 
-    public AuthenticationResponse authenticate(UserDto request) {
+    public AuthenticationResponse authenticate(LoginRequest request) {
+        try {
+            // Map the request to a User object
+            User user = modelMapper.map(request, User.class);
 
-        User user = modelMapper.map(request, User.class);
+            // Attempt authentication
+            authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
-        authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+            // Retrieve the user from the repository
+            User byUsername = userRepo.findByEmail(user.getUsername())
+                    .orElseThrow(() -> new ResourceNotFoundException("user", "username", user.getUsername()));
 
-        User byUsername = userRepo.findByEmail(user.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("user", "username " + user.getUsername(), 0));
+            // Generate JWT token
+            String token = jwtService.generateToken(byUsername);
 
-        String token = jwtService.generateToken(byUsername);
+            // Return successful authentication response
+            return new AuthenticationResponse(
+                    token,
+                    byUsername.getEmail(),
+                    byUsername.getRole().name());
 
-        return new AuthenticationResponse(
-                token,
-                byUsername.getEmail(),
-                byUsername.getRole().name());
+        } catch (AuthenticationException e) {
+            // Handle authentication failure
+            throw new BadCredentialsException("Invalid username or password");
+        }
     }
+
+    public UserDto getUserByEmail(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("user", "email", email));
+
+        return modelMapper.map(user, UserDto.class);
+    }
+
 }
