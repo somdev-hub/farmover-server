@@ -34,4 +34,5 @@ build/
 
 ### Local application.properties ###
 src/main/resources/application-local.properties
+src/main/resources/palmchat-a3122-433c128cf25a.json
 
