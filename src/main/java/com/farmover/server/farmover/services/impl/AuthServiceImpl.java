@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.farmover.server.farmover.entities.User;
+import com.farmover.server.farmover.exceptions.InvalidCredentialsException;
 import com.farmover.server.farmover.exceptions.ResourceNotFoundException;
 import com.farmover.server.farmover.payloads.AuthenticationResponse;
 import com.farmover.server.farmover.payloads.UserDto;
@@ -81,7 +82,7 @@ public class AuthServiceImpl {
 
         } catch (AuthenticationException e) {
             // Handle authentication failure
-            throw new BadCredentialsException("Invalid username or password");
+            throw new InvalidCredentialsException("Invalid credentials");
         }
     }
 
